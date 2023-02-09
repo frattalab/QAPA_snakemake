@@ -1,10 +1,11 @@
-# Snakemake workflow: `<name>`
+# Snakemake workflow: `QAPA_snakemake`
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥6.3.0-brightgreen.svg)](https://snakemake.github.io)
 [![GitHub actions status](https://github.com/<owner>/<repo>/workflows/Tests/badge.svg?branch=main)](https://github.com/<owner>/<repo>/actions?query=branch%3Amain+workflow%3ATests)
 
 
-A Snakemake workflow for `<description>`
+A Snakemake workflow for running QAPA for 3'UTR alternative polyA site quantification and additional steps to perform differential polyA site usage analysis with SatuRn.
+
 
 
 ## Usage
