@@ -1,0 +1,101 @@
+# Configuration file for snakemake pipeline
+
+#### WORKFLOW CONTROL
+
+# Whether to use a pre-computed polyA site/3'UTR annotation file directly to build Salmon index
+# i.e. uses path provided to utr_bed 
+# e.g. if want to use author provided annotation from QAPA repository
+use_precomputed_bed: False
+
+# Overrides any paths defined for polyasite_bed and gencode_polya
+use_custom_polya_bed: False
+
+# whether to use pre-computed Salmon index for quantification (e.g. from previous run with same annotation)
+use_precomputed_salmon_index: False
+
+# Whether to run differential APA with SatuRn
+# If set to False, pipeline will terminate after generating count matrices using tximport
+run_differential_apa: False
+
+
+#### INPUTS
+
+# CSV samplesheet
+# sample_name - identifier for sample
+# condition - group identifier for sample
+# fastq1 - path to first mate read file for sample. If single-end data put path here
+# fastq2 - path to second mate read file for sample. If single-end data leave this field empty
+sample_sheet: "config/samplesheet_example.csv"
+
+# Path to GTF annotation file
+gtf: "test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
+
+# For now download pre-computed annotation file from QAPA repository
+utr_bed: "qapa_3utrs.gencode_VM22.mm10.bed"
+metadata_txt: "ensembl_identifiers.txt"
+
+# Path to genome sequence FASTA file
+genome_fasta: "test_data/chr6_chr16_GRCm38.primary_assembly.genome.fa"
+
+#
+# use 'hsa' for humans, 'mmu' for mouse or 'unk' for others
+species: "mmu"
+
+# Path to PolyASite atlas BED file
+# Leave as empty string if not using e.g. ""
+polyasite_bed: test_data/atlas.bed
+
+# Path to Gencode manual polyA annotation (GTF or BED, inferred from filename suffix)
+# If GTF a BED file of polyA site annotations will be extracted (labelled with 'polyA_site' in 'feature' field of GTF) as in QAPA docs
+# If BED will be passed to downstream steps as is
+# Leave as empty string if not using e.g. ""
+gencode_polya: test_data/gencode.polya.gtf
+
+# Path to a custom BED
+# Leave as empty string if not using. Ignored if use_custom_polya_bed set to False
+custom_polya_bed: test_data/custom.polya.bed
+
+# For development purposes, you can freely choose out_dir.
+# Note that final outputs need to be copied to a global APAeval output directory in the form of "PATH/TO/s3-BUCKET/PARAMCODE/METHOD/"
+out_dir: "output_test"
+
+#### SALMON
+
+# Path to directory containing salmon index. 
+# Useful if want to re-use existing index to save computation
+# Used only if use_computed_salmon_index is set to True
+salmon_index_dir: ""
+
+# Recommended default = 31 (for reads of >= 75bp)
+salmon_kmer_size: 31
+
+# Whether to add the genome sequence as decoys for assigning reads to transcripts
+# e.g. see 2021 paper - I strongly recommend setting this to true
+add_genome_decoys: False
+
+salmon_index_threads: 2
+salmon_quant_threads: 2
+
+# Additional parameters to pass to salmon quant
+# Each parameter should be a string of the exact command line flag
+# (e.g. ["--gcBias", "--seqBias"]) - otherwise leave empty list like []
+salmon_extra_parameters: ["--gcBias", "--seqBias"]
+
+
+#### TXIMPORT
+
+
+
+
+
+### SatuRn
+
+
+
+
+
+
+
+# Settings
+envs: "workflow/envs"
+scripts_dir: "workflow/scripts"

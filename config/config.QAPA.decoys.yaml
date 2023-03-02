@@ -1,0 +1,72 @@
+# Configuration file for snakemake pipeline
+
+# Dataset samples
+samples: "config/samplesheet_example.csv"
+
+# For development purposes, you can freely choose out_dir.
+# Note that final outputs need to be copied to a global APAeval output directory in the form of "PATH/TO/s3-BUCKET/PARAMCODE/METHOD/"
+out_dir: "results_decoys"
+
+#
+gtf: "../../tests/test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
+
+# For now download pre-computed annotation file from QAPA repository
+utr_bed: "qapa_3utrs.gencode_VM22.mm10.bed"
+
+#
+genome_fasta: "chr6_chr16_GRCm38.primary_assembly.genome.fa"
+
+
+
+
+
+param_code : "PARAMCODE" # find at https://github.com/iRNA-COSI/APAeval/blob/main/summary_workflows/parameter_codes.md
+method: "QAPA_fork" # same as the name of the directory
+
+
+# Parameters
+
+#### Salmon parameters
+
+# Recommended default = 31 (for reads of >= 75bp)
+salmon_kmer_size: 31
+
+#
+add_genome_decoys: True
+
+salmon_index_threads: 2
+salmon_quant_threads: 2
+
+# Additional parameters to pass to salmon quant
+# Each parameter should be a string of the exact command line flag
+# (e.g. ["--gcBias", "--seqBias"]) - otherwise leave empty list like []
+salmon_extra_parameters: []
+
+
+
+# Flags to run/output files for each benchmarking challenge
+# All flags are 'True/False' to 'switch on/off' rules to produce challenge output. Valid parameter values are:
+# 'True': Run/output challenge files
+# 'False': Don't run/output challenge files
+# Note: Always set to False if the the tool does not output files compatible with a challenge
+# Note: Do not enclose True/False in quotation marks
+# If combinations of flags are incompatible with one another (e.g. run_differential requires a different workflow to run_quantification), this should be noted here and in the README
+
+# Whether to run steps to produce output files for identification challenge
+run_identification: False
+
+# Whether to run steps to produce output files for quantification challenge
+run_quantification: True
+
+# Whether to run steps to produce output files for differential challenge
+run_differential: False
+
+
+quantification_output_suffix: "QAPA_02.bed"
+relative_quantification_output_suffix: "QAPA_04.bed"
+
+# define method specific parameters here
+
+# Settings
+envs: "workflow/envs"
+scripts_dir: "workflow/scripts"
