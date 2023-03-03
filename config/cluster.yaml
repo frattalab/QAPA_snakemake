@@ -1,0 +1,51 @@
+__default__:
+  h_vmem: 8G
+  tmem: 8G
+  h_rt:  2:00:00
+  submission_string: " "
+
+
+qapa_fasta_decoy:
+  h_vmem: 14G
+  tmem: 14G
+  h_rt: 12:00:00
+  submission_string: " "
+
+qapa_fasta:
+  h_vmem: 14G
+  tmem: 14G
+  h_rt: 12:00:00
+  submission_string: " "
+
+qapa_build:
+  h_vmem: 14G
+  tmem: 14G
+  h_rt: 12:00:00
+  submission_string: " "
+
+qapa_build_custom:
+  h_vmem: 14G
+  tmem: 14G
+  h_rt: 12:00:00
+  submission_string: " "
+
+salmon_index:
+  h_vmem: 20G
+  tmem: 20G
+  h_rt: 12:00:00
+  submission_string: "-pe smp 2 -R y"
+
+salmon_quant_pe:
+  h_vmem: 14G
+  tmem: 14G
+  submission_string: "-pe smp 2 -R y"
+  h_rt: 12:00:00
+
+salmon_quant_se:
+  h_vmem: 12G
+  tmem: 12G
+  submission_string: "-pe smp 2 -R y"
+  h_rt: 12:00:00
+
+
+
