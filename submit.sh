@@ -24,39 +24,38 @@ if [[ ( $@ == "--help") ||  $@ == "-h" ]]; then
     exit 0
 fi
 
-# Generate string to pass config file to snakemake call (provided path enclosed in double quotes)
-CONFIG_PATH=\"$1\"
+# define config path
+CONFIG_PATH=$1
 
-# Generate string to pass bind directory argument to Singularity (provided path enclosed in double quotes and prefixed with '--bind ')
-if [ "$2" != "" ]; then
+# Define bind directory, using default if not provided
+if [ "$2" == "" ]; then
     IN_BIND_PATH="/SAN/vyplab"
 else
     IN_BIND_PATH=$2
+fi
 
-# Now enclose in quotes and combine with --bind prefix
-SMK_BIND_PATH=\""--bind "${IN_BIND_PATH}\"
-
-if [ "$3" != "" ]; then
+# Define run name, using default if not provided
+if [ "$3" == "" ]; then
     RUN_NAME="QAPA"
 else
-    RUN_NAME=$1
+    RUN_NAME=$3
 fi
 
 echo "Constructed config file path: "$CONFIG_PATH
-echo "Constructed singularity bind command"$SMK_BIND_PATH
+echo "Constructed singularity bind command: --bind "$SMK_BIND_PATH
 
 # Create directory for cluster job submission script outputs & copy config file
 FOLDER=submissions/$(date +"%Y%m%d%H%M")
 
-mkdir -p ${FOLDER}
-cp $1 ${FOLDER}/${RUN_NAME}_${1}_config.yaml
+mkdir -p ${FOLDER}/${RUN_NAME}
+cp $1 ${FOLDER}/${RUN_NAME}/
 
 snakemake \
 -p \
---configfile=${CONFIG_PATH} \
+--configfile=$CONFIG_PATH \
 --use-conda \
 --use-singularity \
---singularity-args=${SMK_BIND_PATH} \
+--singularity-args="--bind $IN_BIND_PATH" \
 --jobscript ucl_cluster_qsub.sh \
 --cluster-config config/cluster.yaml \
 --cluster-sync "qsub -l tmem={cluster.tmem},h_vmem={cluster.h_vmem},h_rt={cluster.h_rt} -o $FOLDER {cluster.submission_string}" \
