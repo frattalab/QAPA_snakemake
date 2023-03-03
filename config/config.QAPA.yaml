@@ -5,13 +5,13 @@
 # Whether to use a pre-computed polyA site/3'UTR annotation file directly to build Salmon index
 # i.e. uses path provided to utr_bed 
 # e.g. if want to use author provided annotation from QAPA repository
-use_precomputed_bed: True
+use_precomputed_bed: False
 
 # Overrides any paths defined for polyasite_bed and gencode_polya
 use_custom_polya_bed: False
 
 # whether to use pre-computed Salmon index for quantification (e.g. from previous run with same annotation)
-use_precomputed_salmon_index: False
+use_precomputed_salmon_index: True
 
 # Whether to run differential APA with SatuRn
 # If set to False, pipeline will terminate after generating count matrices using tximport
@@ -32,7 +32,7 @@ gtf: "test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
 
 # For now download pre-computed annotation file from QAPA repository
 utr_bed: "test_data/qapa_3utrs.gencode_VM22.mm10.bed"
-# Gene metadata file (pre-computed from QAPA repository). If you want to use the pre-computed BED but generate the metadata from a GTF file, leave as an empty string ""
+# Gene metadata file (pre-computed from QAPA repository). If you want to use the pre-computed BED but generate the metadata from a GTF file, leave as an empty string "" (be sure to have your input GTF version match to the precomputed version though)
 metadata_txt: "test_data/mm10.ensembl_identifiers.txt"
 
 # Path to genome sequence FASTA file
@@ -65,7 +65,7 @@ out_dir: "output_test"
 # Path to directory containing salmon index. 
 # Useful if want to re-use existing index to save computation
 # Used only if use_computed_salmon_index is set to True
-salmon_index_dir: ""
+salmon_index_dir: "test_data/salmon_index"
 
 # Recommended default = 31 (for reads of >= 75bp)
 salmon_kmer_size: 31

@@ -54,7 +54,7 @@ rule salmon_quant_pe:
     input:
         fast1 = lambda wildcards: samples.loc[wildcards.sample, "fastq1"],
         fast2 = lambda wildcards: samples.loc[wildcards.sample, "fastq2"],
-        index = rules.salmon_index.output.seq
+        index = os.path.join(config["salmon_index_dir"], "seq.bin") if config["use_precomputed_salmon_index"] else rules.salmon_index.output.seq
 
     output:
         os.path.join(config["out_dir"], "salmon", "quant", "pe", "{sample}", "quant.sf")
@@ -99,7 +99,7 @@ rule salmon_quant_pe:
 rule salmon_quant_se:
     input:
         fast1 = lambda wildcards: samples.loc[wildcards.sample, "fastq1"],
-        index = rules.salmon_index.output.seq
+        index = os.path.join(config["salmon_index_dir"], "seq.bin") if config["use_precomputed_salmon_index"] else rules.salmon_index.output.seq
 
     output:
         os.path.join(config["out_dir"], "salmon", "quant", "se", "{sample}", "quant.sf")
