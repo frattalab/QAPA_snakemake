@@ -42,7 +42,7 @@ else
 fi
 
 echo "Constructed config file path: "$CONFIG_PATH
-echo "Constructed singularity bind command: --bind "$SMK_BIND_PATH
+echo "Constructed singularity bind command: --bind "$IN_BIND_PATH
 
 # Create directory for cluster job submission script outputs & copy config file
 FOLDER=submissions/$(date +"%Y%m%d%H%M")
