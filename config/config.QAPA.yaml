@@ -5,7 +5,7 @@
 # Whether to use a pre-computed polyA site/3'UTR annotation file directly to build Salmon index
 # i.e. uses path provided to utr_bed 
 # e.g. if want to use author provided annotation from QAPA repository
-use_precomputed_bed: False
+use_precomputed_bed: True
 
 # Overrides any paths defined for polyasite_bed and gencode_polya
 use_custom_polya_bed: False
@@ -31,8 +31,9 @@ sample_sheet: "config/samplesheet_example.csv"
 gtf: "test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
 
 # For now download pre-computed annotation file from QAPA repository
-utr_bed: "qapa_3utrs.gencode_VM22.mm10.bed"
-metadata_txt: "ensembl_identifiers.txt"
+utr_bed: "test_data/qapa_3utrs.gencode_VM22.mm10.bed"
+# Gene metadata file (pre-computed from QAPA repository). If you want to use the pre-computed BED but generate the metadata from a GTF file, leave as an empty string ""
+metadata_txt: "test_data/mm10.ensembl_identifiers.txt"
 
 # Path to genome sequence FASTA file
 genome_fasta: "test_data/chr6_chr16_GRCm38.primary_assembly.genome.fa"
