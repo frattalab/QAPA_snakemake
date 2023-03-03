@@ -18,6 +18,11 @@ def main(gencode_polya_gtf,
     # QAPA fills with 'polyA_site' so will do the same
     bed = gtf[["Score", "Feature"]].apply(lambda df: df.rename(columns={"Feature": "Name"}))
     
+    # Score field MUST be filled with a integer coercible value - README example has 0s so will use that
+    # Otherwise get ValueError: invalid literal for int() with base 10: '.'
+    # e.g. https://github.com/SamBryce-Smith/qapa/blob/b7dd879edd063a114d9c5df9835d35c991390248/qapa/annotate.py#L85
+    bed.Score = 0
+    
     bed.to_bed(out_bed)
     
 
