@@ -31,7 +31,7 @@ Also generate a combined table (run qapa quant on all samples)
 rule qapa_quant_combined:
     input:
         sfs = expand(os.path.join(config["out_dir"], "salmon", "quant", "{seq_type}", "{sample}", "quant.sf"), zip, seq_type=samples.seq_type.tolist(), sample=samples.index.tolist()),
-        ids = rules.make_identifiers_tbl.output if config["use_precomputed_bed"] and config["metadata_txt"] == "" else config["metadata_txt"]
+        ids = config["metadata_txt"] if config["use_precomputed_bed"] and config["metadata_txt"] != "" else rules.make_identifiers_tbl.output
 
     output: 
         os.path.join(config["out_dir"], "qapa_quant", "all_samples.pau_results.txt")
