@@ -20,7 +20,7 @@ rule salmon_index:
     params:
         k = config["salmon_kmer_size"],
         outdir = os.path.join(config["out_dir"], "salmon", "index", ""),
-        decoys = " ".join(["--decoys", "{input.decoys}"]) if config["add_genome_decoys"] else ""
+        decoys = lambda wildcards, input: " ".join(["--decoys", input.decoys]) if config["add_genome_decoys"] else ""
 
     threads:
         config["salmon_index_threads"]
