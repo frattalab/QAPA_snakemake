@@ -15,7 +15,7 @@ Also generate a combined table (run qapa quant on all samples)
 
 #     log:
 #         stderr = os.path.join(config["out_dir"], "logs", "qapa_fasta", "qapa_quant_single.{sample}.stderr.log"),
-    
+
 #     container:
 #         "docker://sambrycesmith/qapa_fork:231dd0c"
 
@@ -33,14 +33,14 @@ rule qapa_quant_combined:
         sfs = expand(os.path.join(config["out_dir"], "salmon", "quant", "{seq_type}", "{sample}", "quant.sf"), zip, seq_type=samples.seq_type.tolist(), sample=samples.index.tolist()),
         ids = config["metadata_txt"] if config["use_precomputed_bed"] and config["metadata_txt"] != "" else rules.make_identifiers_tbl.output
 
-    output: 
+    output:
         os.path.join(config["out_dir"], "qapa_quant", "all_samples.pau_results.txt")
 
     log:
         stderr = os.path.join(config["out_dir"], "logs", "qapa_quant", "qapa_quant_combined.stderr.log"),
-    
+
     container:
-        "docker://sambrycesmith/qapa_fork:231dd0c"
+        "docker://sambrycesmith/qapa_fork:408d4ae"
 
     shell:
         """
