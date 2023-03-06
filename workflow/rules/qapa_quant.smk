@@ -37,7 +37,7 @@ rule qapa_quant_combined:
         os.path.join(config["out_dir"], "qapa_quant", "all_samples.pau_results.txt")
 
     log:
-        stderr = os.path.join(config["out_dir"], "logs", "qapa_fasta", "qapa_quant_combined.stderr.log"),
+        stderr = os.path.join(config["out_dir"], "logs", "qapa_quant", "qapa_quant_combined.stderr.log"),
     
     container:
         "docker://sambrycesmith/qapa_fork:231dd0c"
