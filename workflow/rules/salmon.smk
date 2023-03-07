@@ -34,7 +34,7 @@ rule salmon_index:
                     "salmon_index.stdout.log"),
         stderr = os.path.join(config["out_dir"], "logs",
                     "salmon",
-                    "salmon_index.stderr.log")    
+                    "salmon_index.stderr.log")
 
 
     shell:
@@ -60,7 +60,7 @@ rule salmon_quant_pe:
         os.path.join(config["out_dir"], "salmon", "quant", "pe", "{sample}", "quant.sf")
 
     params:
-        index_dir = rules.salmon_index.params.outdir,
+        index_dir = config["salmon_index_dir"] if config["use_precomputed_salmon_index"] else rules.salmon_index.params.outdir,
         output_dir = os.path.join(config["out_dir"], "salmon", "quant", "pe", "{sample}"),
         salmon_extra_parameters = " ".join(config["salmon_extra_parameters"]),
         libtype = "A"
@@ -105,7 +105,7 @@ rule salmon_quant_se:
         os.path.join(config["out_dir"], "salmon", "quant", "se", "{sample}", "quant.sf")
 
     params:
-        index_dir = rules.salmon_index.params.outdir,
+        index_dir = config["salmon_index_dir"] if config["use_precomputed_salmon_index"] else rules.salmon_index.params.outdir,
         output_dir = os.path.join(config["out_dir"], "salmon", "quant", "se", "{sample}"),
         salmon_extra_parameters = " ".join(config["salmon_extra_parameters"]),
         libtype = "A"
