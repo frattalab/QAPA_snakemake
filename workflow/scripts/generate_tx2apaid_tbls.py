@@ -166,8 +166,10 @@ def main(pau_tsv_path,
     # reorder PAU columns and output to TSV
     pau = pau[["Transcript_ID", "APA_ID", "Gene"]]
 
-    eprint(f"Writing Transcript_ID | APA_ID | Gene assignment table to file - {output_prefix + '.tx2apa2gene.tsv'}")
-    pau.to_csv(output_prefix + ".tx2apa2gene.tsv", sep="\t", header=True, index=False)
+    eprint(f"Writing Transcript_ID | APA_ID assignment table to file - {output_prefix + '.tx2apa.tsv'}")
+    pau[["Transcript_ID", "APA_ID"]].to_csv(output_prefix + ".tx2apa.tsv", sep="\t", header=True, index=False)
+    eprint(f"Writing Transcript_ID | Gene assignment table to file - {output_prefix + '.tx2gene.tsv'}")
+    pau[["Transcript_ID", "Gene"]].to_csv(output_prefix + "tx2gene.tsv", sep="\t", header=True, index=False)
 
 
 if __name__ == '__main__':
@@ -202,7 +204,7 @@ if __name__ == '__main__':
                         "--output-prefix",
                         default="qapa_annotation",
                         type=str,
-                        help="Output prefix for output tables. Suffixed with '.tx2apa2gene.tsv' for table mapping transcript IDs to APA_IDs. Any generated transcript IDs absent from PAU results or quant.sf these are output to tables suffixed with '.pau_results_missing_ids.tsv' & '.quant_sf_missing_ids.tsv' respectively")
+                        help="Output prefix for output tables. Suffixed with '.tx2apa.tsv' for table mapping transcript IDs to APA_IDs & '.tx2gene.tsv' for mapping transcript IDs to gene IDs. Any generated transcript IDs absent from PAU results or quant.sf these are output to tables suffixed with '.pau_results_missing_ids.tsv' & '.quant_sf_missing_ids.tsv' respectively")
 
 
     if len(sys.argv) == 1:
