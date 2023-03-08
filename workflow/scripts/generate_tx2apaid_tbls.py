@@ -34,6 +34,7 @@ def eprint(*args, **kwargs):
 def main(pau_tsv_path,
          quant_sf_path,
          species_str,
+         genepred_path,
          output_prefix):
     '''
     '''
@@ -43,6 +44,25 @@ def main(pau_tsv_path,
 
     # eprint(pau)
     # eprint(pau.dtypes)
+    
+    if genepred_path is None:
+        eprint("-g/--genePred or path to GTF-derived genePred file not provided - will use 'gene_name' to construct transcript ID")
+    
+    else:
+        eprint(f"Reading in genePred file to extract transcript-gene ID mappings - {genepred_path}")
+        # only need gene_id with version number
+        genepred = pd.read_csv(genepred_path, sep="\t", usecols=[11], names=["Gene_Name"])
+        
+        # gene ID versions not present in pau tbl - need a column with numbers removed before join
+        genepred.loc[:, "Gene"] = genepred["Gene_Name"].str.split(".", expand=True)[0]
+        genepred.drop_duplicates(inplace=True)
+        # eprint(genepred)
+        
+        # join versioned gene_id to pau tbl
+        # eprint(pau)
+        pau.drop(columns=["Gene_Name"], inplace=True)
+        pau = pau.merge(genepred, on="Gene", how="left")
+        # eprint(pau)
 
     eprint("Reconstructing transcript IDs/names in 3'UTR library for each APA_ID...")
 
@@ -142,6 +162,9 @@ def main(pau_tsv_path,
     eprint(f"Fraction of tx IDs generated from pau_results that are missing in quant.sf - {pau_frac_missing}")
     eprint(f"If not 0, consider whether you used inconsistent gene annotation (to make reference 3'UTR library) & identifier versions or provided the wrong species label")
 
+    if pau_frac_missing > 0.5:
+        raise Exception(f"At least 50 % of constructed transcript IDs do not match IDs in quant.sf")
+
     # Output missing IDs to separate TSV files of Transcript_ID | APA_ID
     if len(pau_missing_ids) > 0 or len(quant_missing_ids) > 0:
         eprint("Writing missing transcript IDs to file...")
@@ -159,7 +182,7 @@ def main(pau_tsv_path,
         eprint(f"Writing missing IDs from PAU results table - {output_prefix + '.pau_results_missing_ids.tsv'}")
         pau_missing_df.sort_values(by="Transcript_ID").to_csv(output_prefix + ".pau_results_missing_ids.tsv", sep="\t", index=False, header=True)
 
-        eprint(f"Writing missing IDs from quant.sf table - {output_prefix + '.pau_results_missing_ids.tsv'}")
+        eprint(f"Writing missing IDs from quant.sf table - {output_prefix + '.quant_sf_missing_ids.tsv'}")
         quant_missing_df.sort_values(by="Transcript_ID").to_csv(output_prefix + ".quant_sf_missing_ids.tsv", sep="\t", index=False, header=True, na_rep="NA")
 
 
@@ -199,6 +222,12 @@ if __name__ == '__main__':
                         default="hsa",
                         type=str,
                         help="Species identifier used to construct reference 3'UTRome library. Provided human annotations are labelled with 'hsa', mouse 'mmu' (qapa build default is 'unk')")
+    
+    parser.add_argument("-g",
+                        "--genePred",
+                        type=str,
+                        default=argparse.SUPPRESS,
+                        help="Path to extended GenePred format BED file used as input to qapa build. Applicable if BED was generated using gtfToGenePred -genePredExt as done by QAPA_snakemake pipeline, because this will lead to gene IDs being included in the transcript names as opposed to gene names (if e.g. follow QAPA's mysql query). If unsure, double check the 'Name' field in the quant.sf file. If using pre-provided annotations ignore this flag")
 
     parser.add_argument("-o",
                         "--output-prefix",
@@ -214,4 +243,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    main(args.pau, args.quant, args.species, args.output_prefix)
+    main(args.pau, args.quant, args.species, args.genePred, args.output_prefix)
