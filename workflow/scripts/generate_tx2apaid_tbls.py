@@ -169,7 +169,7 @@ def main(pau_tsv_path,
     eprint(f"Writing Transcript_ID | APA_ID assignment table to file - {output_prefix + '.tx2apa.tsv'}")
     pau[["Transcript_ID", "APA_ID"]].to_csv(output_prefix + ".tx2apa.tsv", sep="\t", header=True, index=False)
     eprint(f"Writing Transcript_ID | Gene assignment table to file - {output_prefix + '.tx2gene.tsv'}")
-    pau[["Transcript_ID", "Gene"]].to_csv(output_prefix + "tx2gene.tsv", sep="\t", header=True, index=False)
+    pau[["Transcript_ID", "Gene"]].to_csv(output_prefix + ".tx2gene.tsv", sep="\t", header=True, index=False)
 
 
 if __name__ == '__main__':
