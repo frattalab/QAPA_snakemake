@@ -32,7 +32,7 @@ rule get_tx2id_tbls:
         python {params.script} \
         --pau {input.pau} \
         --quant {input.sf} \
-        --utr {input.utr_bed} \ 
+        --utr {input.utr_bed} \
         --species {params.species} \
         -o {params.output_prefix} \
         1> {log.stdout} \
