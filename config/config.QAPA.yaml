@@ -11,7 +11,7 @@ use_precomputed_bed: False
 use_custom_polya_bed: False
 
 # whether to use pre-computed Salmon index for quantification (e.g. from previous run with same annotation)
-use_precomputed_salmon_index: True
+use_precomputed_salmon_index: False
 
 # Whether to run differential APA with SatuRn
 # If set to False, pipeline will terminate after generating count matrices using tximport
@@ -85,16 +85,16 @@ salmon_extra_parameters: ["--gcBias", "--seqBias"]
 
 #### TXIMPORT
 
-
-
+# option to pass to scale abundance estimates across samples when generating a combined estimated count matrix from estimated transcript abundances
+# 'dtuScaledTPM' - abundance estimates are scaled using the median transcript length among isoforms of a gene, and then the library size
+# 'lengthScaledTPM' - abundance estimates are scaled using the average transcript length over samples and then the library size
+# 'scaledTPM' - abundance estimates scaled up to library size
+# 'no' - do not use abundance estimates to generate estimated counts
+# If using scaledTPM, lengthScaledTPM, or geneLengthScaledTPM, the counts are no longer correlated across samples with transcript length, and so the length offset matrix should not be used.
+counts_from_abundance: "dtuScaledTPM"
 
 
 ### SatuRn
-
-
-
-
-
 
 
 # Settings
