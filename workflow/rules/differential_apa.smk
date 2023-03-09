@@ -40,7 +40,12 @@ rule get_tx2id_tbls:
         """
 
 
-rule tximport:
+rule tximport:  
+    '''
+    TODO: add option to use tx2gene & tx2apa generated from a previous run
+    Basically, add options to config (under tximport section), leaving default as empty strings
+    If not empty, use provided tbls. Otherwise use output from get_tx2id_tbls
+    '''
     input:
         sfs = expand(os.path.join(config["out_dir"], "salmon", "quant", "{seq_type}", "{sample}", "quant.sf"),
                zip,
@@ -62,6 +67,9 @@ rule tximport:
     log:
         stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "get_tx2id_tbls.stdout.log"),
         stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "get_tx2id_tbls.stderr.log")
+
+    container:
+        "docker://sambrycesmith/qapa_snakemake_r:7d789ca83"
 
     shell:
         """
