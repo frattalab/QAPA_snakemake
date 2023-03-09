@@ -5,11 +5,10 @@ import sys
 samples = pd.read_csv(os.path.abspath(
     config["sample_sheet"])).set_index("sample_name", drop=False)
 
-print(samples)
+# print(samples)
+
 # Check fastq2, if all empty then dataset is single end
 samples.loc[:, "seq_type"] = np.where(samples.fastq2.isna(), "se", "pe")
-print(samples)
-
 
 # if samples['fastq2'].isna().all():
 #     sys.stderr.write("No paths found in 'fastq2' column of sample table - assuming samples are single end\n")
@@ -32,6 +31,7 @@ include: "rules/qapa_build.smk"
 include: "rules/qapa_fasta.smk"
 include: "rules/salmon.smk"
 include: "rules/qapa_quant.smk"
+include: "rules/differential_apa.smk"
 
 #-------------------------------------------------------------------------------
 localrules: finish
@@ -43,7 +43,9 @@ rule finish:
         expand(os.path.join(config["out_dir"], "salmon", "quant", "{seq_type}", "{sample}", "quant.sf"),
                zip,
                seq_type=samples.seq_type.tolist(),  sample=samples.index.tolist()),
-        rules.qapa_quant_combined.output
+        rules.qapa_quant_combined.output,
+        rules.tximport.output.tx_counts,
+        rules.tximport.output.gene_counts
 
 
 #-------------------------------------------------------------------------------

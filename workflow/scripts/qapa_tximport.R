@@ -90,7 +90,6 @@ if (!all_tx_match & opt$countsFromAbundance == "dtuScaledTPM") {
     stop("dtuScaledTPM requires that all transcripts in quant.sf are present in tx2gene table")
 }
 
-
 message("Generating transcript-level count matrix...")
 txi.tx <- tximport(quant_paths,
                    type = "salmon",
