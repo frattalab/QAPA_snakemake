@@ -33,107 +33,81 @@ def eprint(*args, **kwargs):
 
 def main(pau_tsv_path,
          quant_sf_path,
+         utr_bed_path,
          species_str,
-         genepred_path,
          output_prefix):
     '''
     '''
+
+    eprint(f"Reading in BED file used to construct 3'UTR library - {utr_bed_path}")
+    bed = pd.read_csv(utr_bed_path,
+                      sep="\t",
+                      names=["chrom", "start", "end", "name", "score", "Strand", "gene_id"],
+                      usecols=["chrom", "start", "end", "name", "Strand"], # score & gene_id not used to construct transcript name or downstream matching
+                      dtype=np.string_
+                      )
+
+    # eprint(bed)
+
+    # eprint("Reconstructing transcript IDs/names in 3'UTR library for each APA_ID...")
+
+
+    ## Construct the generated transcript ID from info in BED file
+    # ENST00000378424_PRXL2B,ENST00000378425_PRXL2B,ENST00000378427_PRXL2B,ENST00000419916_PRXL2B_hsa_chr1_2589409_2589589_+_utr_2589427_2589589::chr1:2589409-2589589(+)
+    # <name>::<chrom>:<start>-<end>(<strand>)
+
+    # 1. Generate 'bedtools getfasta' string
+    # e.g. ::chr1:2589409-2589589(+)
+    # ::<chrom>:<start>-<end>(<strand>)
+
+    # generate coordinate string
+    bed.loc[:, "exon_coords"] = bed["start"].str.cat(bed["end"], sep="-")
+
+    # eprint(bed.exon_coords)
+
+    # last exon start & end coords no longer needed
+    bed.drop(columns=["start", "end"], inplace=True)
+
+    # Generate 'strand' string
+    bed.loc[:, "strand"] = "(" + bed.Strand + ")"
+
+    # combine start & end with strand
+    bed.loc[:, "exon_coords"] = bed["exon_coords"].str.cat(bed["strand"], sep="")
+
+    # now combine start-end(strand) with chrom
+    bed.loc[:, "exon_coords"] = bed["chrom"].str.cat(bed["exon_coords"], sep=":")
+
+    # now combine name with exon coords
+    # name::chr:start-end(strand)
+    bed.loc[:, "getfasta_name"] = bed["name"].str.cat(bed["exon_coords"], sep="::")
+
+    # eprint(bed["getfasta_name"])
+
+    # Extract 3'UTR coordinates from name - allow to join up to correct APA_ID
+    # ENSMUST00000000985_ENSMUSG00000000959.7_mmu_chr14_54368317_54368934_+_utr_54368451_54368934
+    # 54368451_54368934
+    utr_coords = bed["name"].str.split("_utr_", expand=True)[1]
+    utr_coords = utr_coords.str.split("_", expand=True)
+    utr_coords.rename(columns={0: "UTR3.Start", 1: "UTR3.End"}, inplace=True)
+
+    # eprint(utr_coords)
+
+    bed = bed.merge(utr_coords, left_index=True, right_index=True)
+
+    # eprint(bed)
+
+    bed = bed[["UTR3.Start", "UTR3.End", "Strand", "getfasta_name"]].rename(columns={"getfasta_name": "Transcript_ID"})
+
+    # eprint(bed)
 
     eprint(f"Reading in PAU results table (output of compute_pau.R) - {pau_tsv_path}")
     pau = pd.read_csv(pau_tsv_path, sep="\t", usecols=pau_annot_cols, dtype=np.string_)
 
     # eprint(pau)
-    # eprint(pau.dtypes)
-    
-    if genepred_path is None:
-        eprint("-g/--genePred or path to GTF-derived genePred file not provided - will use 'gene_name' to construct transcript ID")
-    
-    else:
-        eprint(f"Reading in genePred file to extract transcript-gene ID mappings - {genepred_path}")
-        # only need gene_id with version number
-        genepred = pd.read_csv(genepred_path, sep="\t", usecols=[11], names=["Gene_Name"])
-        
-        # gene ID versions not present in pau tbl - need a column with numbers removed before join
-        genepred.loc[:, "Gene"] = genepred["Gene_Name"].str.split(".", expand=True)[0]
-        genepred.drop_duplicates(inplace=True)
-        # eprint(genepred)
-        
-        # join versioned gene_id to pau tbl
-        # eprint(pau)
-        pau.drop(columns=["Gene_Name"], inplace=True)
-        pau = pau.merge(genepred, on="Gene", how="left")
-        # eprint(pau)
+    # # eprint(pau.dtypes)
 
-    eprint("Reconstructing transcript IDs/names in 3'UTR library for each APA_ID...")
-
-    #1. Split 'Transcript' by commma to get list of transcript IDs for each APA_ID
-    pau.Transcript = pau.Transcript.str.split(",", expand=False)
-
-    # eprint(pau)
-
-    # for every tx, combine with gene_name
-    # e.g. [ENST00000666110, ENST00000217961] --> ENST00000666110_STS,ENST00000217961_STS
-    pau.loc[:, "tx_name"] = pau.apply(lambda row: ",".join([tx + "_" + str(row["Gene_Name"]) for tx in row["Transcript"]]), axis="columns")
-    pau.drop(columns=["Transcript", "Gene_Name"], inplace=True)
-
-    # eprint(pau)
-
-    #2. create 'sequence info' string
-    # e.g. hsa_chr1_2589409_2589589_+_utr_2589427_2589589
-    # <species>_<chromosome>_<exon_start>_<exon_end>_<strand>_utr_<utr_start>_<utr_end>
-
-    # First add dummy columns for species and utr
-    pau.loc[:, "species"] = species_str
-    pau.loc[:, "utr"] = "utr"
-
-    # eprint(pau)
-
-    # Chr	LastExon.Start	LastExon.End	Strand	UTR3.Start	UTR3.End
-    pau.loc[:, "sequence"] = pau["species"].str.cat(pau[["Chr", "LastExon.Start", "LastExon.End", "Strand", "utr", "UTR3.Start", "UTR3.End"]], sep="_")
-
-    pau.drop(columns=["species", "utr", "UTR3.Start", "UTR3.End"], inplace=True)
-
-    # eprint(pau)
-
-    # Finally need to generate 'bedtools getfasta' string
-    # e.g. ::chr1:2589409-2589589(+)
-    # ::<chrom>:<exon_start>-<exon_end>(<strand>)
-
-    # Generate 'strand' string
-    pau.Strand = "(" + pau.Strand + ")"
-
-    # eprint(pau.Strand)
-
-    # generate coordinate string
-    pau.loc[:, "exon_coords"] = pau["LastExon.Start"].str.cat(pau["LastExon.End"], sep="-")
-
-    # eprint(pau.exon_coords)
-
-    # last exon start & end no longer needed
-    pau.drop(columns=["LastExon.Start", "LastExon.End"], inplace=True)
-
-    # generate 'chromosome' string
-    pau.Chr = "::" + pau.Chr + ":"
-
-    # eprint(pau.Chr)
-
-    # finally generate 'getfasta string'
-    pau.loc[:, "getfasta_coords"] = pau["Chr"].str.cat(pau[["exon_coords", "Strand"]].astype(str), sep="")
-
-    # drop cols no longer needed
-    pau.drop(columns=["Chr", "Strand", "exon_coords"], inplace=True)
-
-    # eprint(pau)
-
-    # finally create transcript ID - combo of tx_name, sequence & getfasta_coords
-    # ENST00000378424_PRXL2B,ENST00000378425_PRXL2B,ENST00000378427_PRXL2B,ENST00000419916_PRXL2B_hsa_chr1_2589409_2589589_+_utr_2589427_2589589::chr1:2589409-2589589(+)
-
-    # first join sequence & getfasta_coords with no delimiter
-    pau = pau.assign(seq_getfasta=lambda df: df["sequence"].str.cat(df["getfasta_coords"], sep="")).drop(columns=["sequence", "getfasta_coords"])
-
-    # eprint(pau)
-
-    pau = pau.assign(Transcript_ID=lambda df: df["tx_name"].str.cat(df["seq_getfasta"], sep="_")).drop(columns=["tx_name", "seq_getfasta"])
+    # Join constructed names to pau results to associate APA_IDs with transcript names
+    pau = pau.merge(bed, on = ["UTR3.Start", "UTR3.End", "Strand"], how="left")
 
     # eprint(pau)
 
@@ -218,16 +192,17 @@ if __name__ == '__main__':
                         type=str,
                         help="Path to quant.sf file output by salmon quant for 3'UTRome/reference library")
 
+    parser.add_argument("-b",
+                        "--utr",
+                        required=True,
+                        type=str,
+                        default=argparse.SUPPRESS,
+                        help="Path to 3'UTR BED file generated by qapa build used to construct transcripts sequences (with qapa fasta)")
+
     parser.add_argument("--species",
                         default="hsa",
                         type=str,
                         help="Species identifier used to construct reference 3'UTRome library. Provided human annotations are labelled with 'hsa', mouse 'mmu' (qapa build default is 'unk')")
-    
-    parser.add_argument("-g",
-                        "--genePred",
-                        type=str,
-                        default=argparse.SUPPRESS,
-                        help="Path to extended GenePred format BED file used as input to qapa build. Applicable if BED was generated using gtfToGenePred -genePredExt as done by QAPA_snakemake pipeline, because this will lead to gene IDs being included in the transcript names as opposed to gene names (if e.g. follow QAPA's mysql query). If unsure, double check the 'Name' field in the quant.sf file. If using pre-provided annotations ignore this flag")
 
     parser.add_argument("-o",
                         "--output-prefix",
@@ -243,4 +218,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    main(args.pau, args.quant, args.species, args.genePred, args.output_prefix)
+    main(args.pau, args.quant, args.utr, args.species, args.output_prefix)
