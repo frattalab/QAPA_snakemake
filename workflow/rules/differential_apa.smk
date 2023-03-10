@@ -65,8 +65,8 @@ rule tximport:
         cfa = config["counts_from_abundance"]
     
     log:
-        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "get_tx2id_tbls.stdout.log"),
-        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "get_tx2id_tbls.stderr.log")
+        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "tximport.stdout.log"),
+        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "tximport.stderr.log")
 
     container:
         "docker://sambrycesmith/qapa_snakemake_r:7d789ca83"
