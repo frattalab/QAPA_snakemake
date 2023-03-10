@@ -52,7 +52,7 @@ rule tximport:
                seq_type=samples.seq_type.tolist(),
                sample=samples.index.tolist()),
         sample_tbl = config["sample_sheet"],
-        tx2gene = rules.get_tx2id_tbls.output.tx2gene
+        tx2gene = rules.get_tx2id_tbls.output.tx2gene if config["tx2gene"] == "" else config["tx2gene"]
 
     output:
         tx_counts = os.path.join(config["out_dir"], "differential_apa", "all_samples.tx_counts.tsv"),

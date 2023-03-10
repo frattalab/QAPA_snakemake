@@ -85,6 +85,11 @@ salmon_extra_parameters: ["--gcBias", "--seqBias"]
 
 #### TXIMPORT
 
+# Path to transcript | gene assignment table
+# If left as empty string, pipeline will generate it using 3'UTR BED file, PAU results table and quant.sf file from pipeline run (output at <main_output_dir>/annotation/qapa_annotation.tx2gene.tsv)
+# If have already generated through a previous run of the pipeline with same annotation, provide the path to skip the computation
+tx2gene: ""
+
 # option to pass to scale abundance estimates across samples when generating a combined estimated count matrix from estimated transcript abundances
 # 'dtuScaledTPM' - abundance estimates are scaled using the median transcript length among isoforms of a gene, and then the library size
 # 'lengthScaledTPM' - abundance estimates are scaled using the average transcript length over samples and then the library size
@@ -95,6 +100,11 @@ counts_from_abundance: "dtuScaledTPM"
 
 
 ### SatuRn
+
+# Path to transcript | APA_ID assignment table
+# If left as empty string, pipeline will generate it using 3'UTR BED file, PAU results table and quant.sf file from pipeline run (output at <main_output_dir>/annotation/qapa_annotation.tx2apa.tsv)
+# If have already generated through a previous run of the pipeline with same annotation, provide the path to skip the computation
+tx2apa: ""
 
 
 # Settings
