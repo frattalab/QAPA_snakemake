@@ -140,11 +140,15 @@ def main(pau_tsv_path,
         raise Exception(f"At least 50 % of constructed transcript IDs do not match IDs in quant.sf")
 
     # Output missing IDs to separate TSV files of Transcript_ID | APA_ID
-    if len(pau_missing_ids) > 0 or len(quant_missing_ids) > 0:
-        eprint("Writing missing transcript IDs to file...")
+    if len(pau_missing_ids) > 0:
+        
         pau_missing_df = pau.loc[pau["Transcript_ID"].isin(pau_missing_ids), ["Transcript_ID", "APA_ID"]]
-
         # eprint(pau_missing_df)
+        
+        eprint(f"Writing APA_IDs from PAU results table with missing IDs in quant.sf to file - {output_prefix + '.pau_results_missing_ids.tsv'}")
+        pau_missing_df.sort_values(by="Transcript_ID").to_csv(output_prefix + ".pau_results_missing_ids.tsv", sep="\t", index=False, header=True)
+
+    if len(quant_missing_ids) > 0:
 
         quant_missing_df = quant.copy()
         quant_missing_df = quant_missing_df.loc[quant_missing_df["Name"].isin(quant_missing_ids), :]
@@ -152,11 +156,8 @@ def main(pau_tsv_path,
         quant_missing_df.rename(columns={"Name": "Transcript_ID"}, inplace=True)
 
         # eprint(quant_missing_df)
-
-        eprint(f"Writing missing IDs from PAU results table - {output_prefix + '.pau_results_missing_ids.tsv'}")
-        pau_missing_df.sort_values(by="Transcript_ID").to_csv(output_prefix + ".pau_results_missing_ids.tsv", sep="\t", index=False, header=True)
-
-        eprint(f"Writing missing IDs from quant.sf table - {output_prefix + '.quant_sf_missing_ids.tsv'}")
+        
+        eprint(f"Writing transcript IDs from quant.sf without associated APA_IDs from PAU results table to file - {output_prefix + '.quant_sf_missing_ids.tsv'}")
         quant_missing_df.sort_values(by="Transcript_ID").to_csv(output_prefix + ".quant_sf_missing_ids.tsv", sep="\t", index=False, header=True, na_rep="NA")
 
 
