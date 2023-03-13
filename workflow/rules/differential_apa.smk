@@ -118,5 +118,6 @@ rule saturn_apa:
         -c {threads} \
         --min-mean-count {params.min_mean_count} \
         -o {params.output_prefix} \
-        &> {log}
+        > {log.stdout} \
+        2> {log.stderr}
         """
