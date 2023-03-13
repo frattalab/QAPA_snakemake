@@ -42,9 +42,6 @@ rule get_tx2id_tbls:
 
 rule tximport:  
     '''
-    TODO: add option to use tx2gene & tx2apa generated from a previous run
-    Basically, add options to config (under tximport section), leaving default as empty strings
-    If not empty, use provided tbls. Otherwise use output from get_tx2id_tbls
     '''
     input:
         sfs = expand(os.path.join(config["out_dir"], "salmon", "quant", "{seq_type}", "{sample}", "quant.sf"),
@@ -81,4 +78,45 @@ rule tximport:
         -o {params.output_prefix} \
         1> {log.stdout} \
         2> {log.stderr}
+        """
+
+
+rule saturn_apa:
+    input:
+        counts = rules.tximport.output.tx_counts,
+        le2gene = rules.get_tx2id_tbls.output.tx2gene if config["tx2gene"] == "" else config["tx2gene"],
+        sample_tbl = config["sample_sheet"]
+
+    output:
+        saturn_tbl = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.results.tsv"),
+        rda = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.image.RData"),
+        normed_counts = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.filtered_normed_counts.tsv")
+
+    params:
+        script = "scripts/run_differential_usage.R",
+        output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa"),
+        min_mean_count = config["min_mean_count"],
+        base_condition = config["base_condition"]
+    
+    threads:
+        config["saturn_threads"]
+    
+    log:
+        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "saturn_apa.stdout.log"),
+        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "saturn_apa.stderr.log")
+
+    container:
+        "docker://sambrycesmith/qapa_snakemake_r:7d789ca83"
+
+    shell:
+        """
+        Rscript {params.script} \
+        -i {input.counts} \
+        -g {input.le2gene} \
+        -s {input.sample_tbl} \
+        -b {params.base_condition} \
+        -c {threads} \
+        --min-mean-count {params.min_mean_count} \
+        -o {params.output_prefix} \
+        &> {log}
         """

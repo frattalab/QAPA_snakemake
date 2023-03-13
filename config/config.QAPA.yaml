@@ -15,7 +15,7 @@ use_precomputed_salmon_index: False
 
 # Whether to run differential APA with SatuRn
 # If set to False, pipeline will terminate after generating count matrices using tximport
-run_differential_apa: False
+run_differential_apa: True
 
 
 #### INPUTS
@@ -26,6 +26,9 @@ run_differential_apa: False
 # fastq1 - path to first mate read file for sample. If single-end data put path here
 # fastq2 - path to second mate read file for sample. If single-end data leave this field empty
 sample_sheet: "config/samplesheet_example.csv"
+
+# identifier in 'condition' column of sample table which corresponds to the 'base' group in the comparison (e.g. controls)
+base_condition: "CTL"
 
 # Path to GTF annotation file
 gtf: "test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
@@ -106,6 +109,10 @@ counts_from_abundance: "dtuScaledTPM"
 # If have already generated through a previous run of the pipeline with same annotation, provide the path to skip the computation
 tx2apa: ""
 
+saturn_threads: 2
+
+# Minimum mean count (after calculating size factors with DESeq2's approach) in any condition for an isoform to be retained for differential usage analysis
+min_mean_count: 10
 
 # Settings
 envs: "workflow/envs"

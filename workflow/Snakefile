@@ -10,6 +10,9 @@ samples = pd.read_csv(os.path.abspath(
 # Check fastq2, if all empty then dataset is single end
 samples.loc[:, "seq_type"] = np.where(samples.fastq2.isna(), "se", "pe")
 
+# Check that provided base condition can be found in 'condition' column
+assert len(samples[samples["condition"] == config["base_condition"]]) > 0, f"Provided 'base_condition' value - {config['base_condition']} - not found in sample table. Following values found (comma separated) - {','.join(samples['condition'].drop_duplicates().tolist())}"
+
 # if samples['fastq2'].isna().all():
 #     sys.stderr.write("No paths found in 'fastq2' column of sample table - assuming samples are single end\n")
 #     single_end = True
@@ -23,6 +26,11 @@ for flag in bool_flags:
     assert isinstance(config[flag], bool), f"{flag} must be True/False boolean, {config[flag]} (type {type(config[flag])}) was provided"
 
 #assert isinstance(config["run_differential_apa"], bool), f"'run_differential' must be True/False boolean, {config['run_differential']} (type {type(config['run_differential'])}) was provided"
+
+# double check validity of sample table if performing differential usage analysis (only two possible conditions)
+if config["run_differential_apa"]:
+    assert samples["condition"].nunique() == 2, f"Must only be two distinct values in 'condition' column of sample table, found {samples['condition'].nunique()}"
+
 
 
 
@@ -44,8 +52,7 @@ rule finish:
                zip,
                seq_type=samples.seq_type.tolist(),  sample=samples.index.tolist()),
         rules.qapa_quant_combined.output,
-        rules.tximport.output.tx_counts,
-        rules.tximport.output.gene_counts
+        rules.saturn_apa.output.saturn_tbl if config["run_differential_apa"] else rules.tximport.output.tx_counts
 
 
 #-------------------------------------------------------------------------------
