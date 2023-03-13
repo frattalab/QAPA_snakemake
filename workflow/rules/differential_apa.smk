@@ -93,7 +93,7 @@ rule saturn_apa:
         normed_counts = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.filtered_normed_counts.tsv")
 
     params:
-        script = "scripts/run_differential_usage.R",
+        script = os.path.join(config["scripts_dir"], "run_differential_usage.R"),
         output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa"),
         min_mean_count = config["min_mean_count"],
         base_condition = config["base_condition"]
