@@ -130,20 +130,20 @@ rule process_saturn_tbl:
         qapa_quant = rules.qapa_quant_combined.output
 
     output:
-        os.path.join(config["out_dir"], "differential_apa", "saturn_apa.processed.tsv")
-         
+        os.path.join(config["out_dir"], "differential_apa", "saturn_apa.results.processed.tsv")
+
 
     params:
         script = os.path.join(config["scripts_dir"], "process_satuRn_tbl.R"),
-        output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.processed")
-    
+        output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.results")
+
     log:
         stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "process_saturn_tbl.stdout.log"),
         stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "process_saturn_tbl.stderr.log")
 
     container:
-        "docker://sambrycesmith/qapa_snakemake_r:ad6d331" 
-    
+        "docker://sambrycesmith/qapa_snakemake_r:ad6d331"
+
     shell:
         """
         Rscript {params.script} \
