@@ -40,7 +40,7 @@ rule get_tx2id_tbls:
         """
 
 
-rule tximport:  
+rule tximport:
     '''
     '''
     input:
@@ -60,13 +60,13 @@ rule tximport:
         salmon_dir = os.path.join(config["out_dir"], "salmon", "quant"),
         output_prefix = os.path.join(config["out_dir"], "differential_apa", "all_samples"),
         cfa = config["counts_from_abundance"]
-    
+
     log:
         stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "tximport.stdout.log"),
         stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "tximport.stderr.log")
 
     container:
-        "docker://sambrycesmith/qapa_snakemake_r:7d789ca83"
+        "docker://sambrycesmith/qapa_snakemake_r:ad6d331"
 
     shell:
         """
@@ -97,16 +97,16 @@ rule saturn_apa:
         output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa"),
         min_mean_count = config["min_mean_count"],
         base_condition = config["base_condition"]
-    
+
     threads:
         config["saturn_threads"]
-    
+
     log:
         stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "saturn_apa.stdout.log"),
         stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "saturn_apa.stderr.log")
 
     container:
-        "docker://sambrycesmith/qapa_snakemake_r:7d789ca83"
+        "docker://sambrycesmith/qapa_snakemake_r:ad6d331"
 
     shell:
         """
