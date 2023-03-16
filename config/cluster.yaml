@@ -47,5 +47,8 @@ salmon_quant_se:
   submission_string: "-pe smp 2 -R y"
   h_rt: 12:00:00
 
-
-
+saturn_apa:
+  h_vmem: 10G
+  tmem: 10G
+  submission_string: "-pe smp 2 -R y"
+  h_rt: 12:00:00
