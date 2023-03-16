@@ -6,5 +6,6 @@ FROM rocker/tidyverse:4.2.2
 
 
 # Install required r packages
-RUN Rscript -e 'install.packages(c("optparse", "BiocManager", "glue"), dependencies=TRUE, repos = "http://cran.us.r-project.org")'
-RUN Rscript -e 'BiocManager::install(c("tximport", "satuRn", "limma", "DESeq2", "BioCParallel", "SummarizedExperiment"), dependencies=TRUE)'
+RUN Rscript -e 'install.packages(c("optparse", "BiocManager", "glue", "devtools"), dependencies=TRUE, repos = "http://cran.us.r-project.org")'
+RUN Rscript -e 'devtools::install_github("SamBryce-Smith/satuRn", ref = "9c346e8")'
+RUN Rscript -e 'BiocManager::install(c("tximport", "limma", "DESeq2", "BioCParallel", "SummarizedExperiment"), dependencies=TRUE)'
