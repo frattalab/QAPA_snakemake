@@ -121,3 +121,36 @@ rule saturn_apa:
         > {log.stdout} \
         2> {log.stderr}
         """
+
+
+rule process_saturn_tbl:
+    input:
+        saturn_tbl = rules.saturn_apa.output.saturn_tbl,
+        tx2apa = rules.get_tx2id_tbls.output.tx2apa if config["tx2apa"] == "" else config["tx2gene"],
+        qapa_quant = rules.qapa_quant_combined.output
+
+    output:
+        os.path.join(config["out_dir"], "differential_apa", "saturn_apa.processed.tsv")
+         
+
+    params:
+        script = os.path.join(config["scripts_dir"], "process_satuRn_tbl.R"),
+        output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.processed")
+    
+    log:
+        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "process_saturn_tbl.stdout.log"),
+        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "process_saturn_tbl.stderr.log")
+
+    container:
+        "docker://sambrycesmith/qapa_snakemake_r:ad6d331" 
+    
+    shell:
+        """
+        Rscript {params.script} \
+        -i {input.saturn_tbl} \
+        -a {input.tx2apa} \
+        -p {input.qapa_quant} \
+        -o {params.output_prefix} \
+        > {log.stdout} \
+        2> {log.stderr}
+        """

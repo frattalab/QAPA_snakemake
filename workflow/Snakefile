@@ -52,7 +52,7 @@ rule finish:
                zip,
                seq_type=samples.seq_type.tolist(),  sample=samples.index.tolist()),
         rules.qapa_quant_combined.output,
-        rules.saturn_apa.output.saturn_tbl if config["run_differential_apa"] else rules.tximport.output.tx_counts
+        rules.process_saturn_tbl.output if config["run_differential_apa"] else rules.tximport.output.tx_counts
 
 
 #-------------------------------------------------------------------------------
