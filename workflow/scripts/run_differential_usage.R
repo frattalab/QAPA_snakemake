@@ -215,14 +215,18 @@ dtu_wrapper <- function(counts, iso2gene, sample_tbl, min_mean_reads = 10, cores
   }
   
   # 5. Set up test for DTU 
-  message("Testing for differential usage across specified contrast...")
-
+  
+  message("Constructing contrasts for differential usage testing...")
   dsgn <- dtu_design(sample_tbl[, cond_col], base_cond, treat_cond)
-  
+  print(dsgn)
   cntrsts <- dtu_contrasts(dsgn, base_cond, treat_cond)
-  
+  print(cntrsts)
+  message("Testing for differential usage across specified contrasts...")
   se <- testDTU(object = se,
-                contrasts = cntrsts
+                contrasts = cntrsts,
+                diagplot1 = FALSE,
+                diagplot2 = FALSE
+
   )
   
   
@@ -237,6 +241,8 @@ dtu_wrapper <- function(counts, iso2gene, sample_tbl, min_mean_reads = 10, cores
 
 }
 
+sessionInfo()
+
 # Read in and process data
 
 sample_tbl <- read.table(opt$sample_table,
@@ -247,7 +253,7 @@ sample_tbl <- read.table(opt$sample_table,
 counts <- read.table(opt$counts,
                      sep = "\t",
                      header = TRUE,
-                     row.names = "le_id")
+                     row.names = "Transcript_ID")
 
 # count matrix as output by tx_to_polya_quant.R contains gene_id column
 # Remove it if it's there...
@@ -269,14 +275,15 @@ tx2gene <- read.table(opt$tx2gene,
 colnames(tx2gene) <- c("isoform_id", "gene_id")
 
 # Check the base condition key can be found in sample table
-base_key <- opt$base_key
 
-if (!(any(base_key %in% sample_tbl[, "condition"]))) {
+if (!(any(opt$base_key %in% sample_tbl[, "condition"]))) {
   stop("Provided -b/--base-key not found in 'condition' column of provided sample table")
 }
 
-# (Dirtily) retrieve the contrast key as the first value that isn't the base condition (pipeline checks validity of sample table before running script)
-treat_key <- sample_tbl[sample_tbl[, "condition"] != base_key, "condition"][1]
+# (Dirtily) retrieve the base & contrast keys from sample tables (pipeline checks validity of sample table before running script)
+# Ensures both are factors
+base_key <- sample_tbl[sample_tbl[, "condition"] == opt$base_key, "condition"][1]
+treat_key <- sample_tbl[sample_tbl[, "condition"] != opt$base_key, "condition"][1]
 
 message(glue("Base condition key - {base_key}"))
 message(glue("Treatment condition key - {treat_key}"))
