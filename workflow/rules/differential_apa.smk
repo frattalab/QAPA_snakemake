@@ -126,7 +126,7 @@ rule saturn_apa:
 rule process_saturn_tbl:
     input:
         saturn_tbl = rules.saturn_apa.output.saturn_tbl,
-        tx2apa = rules.get_tx2id_tbls.output.tx2apa if config["tx2apa"] == "" else config["tx2gene"],
+        tx2apa = rules.get_tx2id_tbls.output.tx2apa if config["tx2apa"] == "" else config["tx2apa"],
         qapa_quant = rules.qapa_quant_combined.output
 
     output:
