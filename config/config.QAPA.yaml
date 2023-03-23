@@ -63,6 +63,13 @@ custom_polya_bed: test_data/custom.polya.bed
 # Note that final outputs need to be copied to a global APAeval output directory in the form of "PATH/TO/s3-BUCKET/PARAMCODE/METHOD/"
 out_dir: "output_test"
 
+
+#### QAPA BUILD
+
+# Number of exons to extend in 5' direction. Used for resolving different 5' ends of overlapping 3' UTRs. Setting 0 will exclude internal 3' UTRs.
+# Default: 0
+num_exons_extend_5p: 0
+
 #### SALMON
 
 # Path to directory containing salmon index. 

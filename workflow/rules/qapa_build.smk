@@ -12,7 +12,8 @@ rule qapa_build_standard:
         os.path.join(config["out_dir"], "qapa_build", "utrs.standard_polya.bed")
 
     params:
-        species = config["species"]
+        species = config["species"],
+        num_extends = config["num_exons_extend_5p"]
 
     log:
         stdout = os.path.join(config["out_dir"], "logs", "qapa_build", "qapa_build_standard.stdout.log"),
@@ -28,6 +29,7 @@ rule qapa_build_standard:
         --gencode_polya {input.gencode_pas} \
         --polyasite {input.polyasite} \
         --species {params.species} \
+        -e {params.num_extends} \
         {input.genepred} \
         > {output} \
         2> {log.stderr}
@@ -46,7 +48,9 @@ rule qapa_build_custom:
         os.path.join(config["out_dir"], "qapa_build", "utrs.custom_polya.bed")
     
     params:
-        species = config["species"]
+        species = config["species"],
+        num_extends = config["num_exons_extend_5p"]
+
 
     log:
         stdout = os.path.join(config["out_dir"], "logs", "qapa_build", "qapa_build_custom.stdout.log"),
@@ -61,6 +65,7 @@ rule qapa_build_custom:
         --db {input.tx_db} \
         --other {input.custom_pas} \
         --species {params.species} \
+        -e {params.num_extends} \
         {input.genepred} \
         > {output} \
         2> {log.stderr}
