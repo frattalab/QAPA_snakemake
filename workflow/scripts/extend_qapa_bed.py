@@ -168,9 +168,11 @@ def main(qapa_bed_path: str,
     # extract introns
     introns = gtf.features.introns(by="transcript")
     
-    print(introns[["Feature", "transcript_id", "gene_id"]])
-    print(introns.columns)
+    # print(introns[["Feature", "transcript_id", "gene_id"]])
+    # print(introns.columns)
     
+    
+    print("Finding terminal introns for each last exon in QAPA BED file")
     # Find introns that are directly bookended with the 5'end of last exons 
     # 1. Overlap introns with last exons from BED
     # 2. Subset for introns where 3'end coordinate equals 5'end coord of BED
@@ -182,9 +184,10 @@ def main(qapa_bed_path: str,
      .subset(lambda df: _df_match_3p_adj(df))
      )
     
-    print(introns_m)
+    # print(introns_m)
     
     # now extract exons that are directly adjacent to the matching introns (i.e. are the upstream exon)
+    print("Finding penultimate exons for each transcript")
     exons = gtf.subset(lambda df: df.Feature == "exon")
     
     exons_m = (exons.join(introns_m,
@@ -196,18 +199,26 @@ def main(qapa_bed_path: str,
                .subset(lambda df: _df_match_3p_adj(df, suffix="_intron"))
                )
     
-    print(exons_m)
-    
-    print(exons_m.columns)
-
-    
-    
+    # print(exons_m)
+    # print(exons_m.columns)
     
     # Sometimes upstream last exon will be identical between multiple tx ids - just keep one for merging
     exons_m = exons_m[["Name"]].apply(lambda df: df.drop_duplicates(subset=["Name", "Start", "End"]))
     all_exons = pr.concat([exons_m, qapa_bed])
     
-    print(all_exons)
+    # print(all_exons)
+    
+    print("Reformatting transcript regions to BED12 region specifications...")
+    bed12 = gr_to_bed12(all_exons)
+    
+    # Get duplicate rows (maybe because multiple matching penultimate exons?) - remove
+    bed12 = bed12.apply(lambda df: df.drop_duplicates(subset=["Name", "Start", "End"]))
+    
+    
+    out_col_order = ["Chromosome", "Start", "End", "Name", "Score", "Strand", "thickStart", "thickEnd", "itemRgb", "blockCount", "blockSizes", "blockStarts"]
+
+    print(f"Writing BED12 to - {output_bed}")
+    bed12.as_df()[out_col_order].to_csv(output_bed, sep="\t",header=False,index=False)
     
     # all_exons.to_bed(output_bed + ".all_exons.bed")
     
@@ -215,4 +226,19 @@ def main(qapa_bed_path: str,
     
 
 if __name__ == '__main__':
+    
+    help="""python extend_qapa_bed.py QAPA_BED GTF SPECIES OUTPUT_BED
+
+    Add penultimate exons to transcript models produced by qapa build for PAS quantification with Salmon
+
+    QAPA_BED - BED file produced by qapa build command
+    GTF - transcript annotation file in GTF format used as input to qapa build command
+    SPECIES - 'species' string used in qapa build command (e.g. 'hsa', 'mmu')
+    OUTPUT_BED - name of output BED12 file
+    """
+    
+    if any(i in sys.argv for i in ["-h","--help"]) or len(sys.argv) == 1:
+        print(help)
+        sys.exit()
+    
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
