@@ -40,9 +40,19 @@ def main(pau_tsv_path,
     '''
 
     eprint(f"Reading in BED file used to construct 3'UTR library - {utr_bed_path}")
-    bed = pd.read_csv(utr_bed_path,
+
+    try:
+        bed = pd.read_csv(utr_bed_path,
                       sep="\t",
                       names=["chrom", "start", "end", "name", "score", "Strand", "gene_id"],
+                      usecols=["chrom", "start", "end", "name", "Strand"], # score & gene_id not used to construct transcript name or downstream matching
+                      dtype=np.string_
+                      )
+    except ValueError:
+        # this is a BED12 format input - need to update names accordingly
+        bed = pd.read_csv(utr_bed_path,
+                      sep="\t",
+                      names=["chrom", "start", "end", "name", "score", "Strand", "thickStart","thickEnd", "itemRgb", "blockCount", "blockSizes", "blockStarts"],
                       usecols=["chrom", "start", "end", "name", "Strand"], # score & gene_id not used to construct transcript name or downstream matching
                       dtype=np.string_
                       )
@@ -141,10 +151,10 @@ def main(pau_tsv_path,
 
     # Output missing IDs to separate TSV files of Transcript_ID | APA_ID
     if len(pau_missing_ids) > 0:
-        
+
         pau_missing_df = pau.loc[pau["Transcript_ID"].isin(pau_missing_ids), ["Transcript_ID", "APA_ID"]]
         # eprint(pau_missing_df)
-        
+
         eprint(f"Writing APA_IDs from PAU results table with missing IDs in quant.sf to file - {output_prefix + '.pau_results_missing_ids.tsv'}")
         pau_missing_df.sort_values(by="Transcript_ID").to_csv(output_prefix + ".pau_results_missing_ids.tsv", sep="\t", index=False, header=True)
 
@@ -156,7 +166,7 @@ def main(pau_tsv_path,
         quant_missing_df.rename(columns={"Name": "Transcript_ID"}, inplace=True)
 
         # eprint(quant_missing_df)
-        
+
         eprint(f"Writing transcript IDs from quant.sf without associated APA_IDs from PAU results table to file - {output_prefix + '.quant_sf_missing_ids.tsv'}")
         quant_missing_df.sort_values(by="Transcript_ID").to_csv(output_prefix + ".quant_sf_missing_ids.tsv", sep="\t", index=False, header=True, na_rep="NA")
 
