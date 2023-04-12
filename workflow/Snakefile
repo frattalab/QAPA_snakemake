@@ -7,17 +7,12 @@ samples = pd.read_csv(os.path.abspath(
 
 # print(samples)
 
-# Check fastq2, if all empty then dataset is single end
+# Check fastq2 to define whether sample is single-end/paired-end
 samples.loc[:, "seq_type"] = np.where(samples.fastq2.isna(), "se", "pe")
 
 # Check that provided base condition can be found in 'condition' column
-assert len(samples[samples["condition"] == config["base_condition"]]) > 0, f"Provided 'base_condition' value - {config['base_condition']} - not found in sample table. Following values found (comma separated) - {','.join(samples['condition'].drop_duplicates().tolist())}"
+# assert len(samples[samples["condition"] == config["base_condition"]]) > 0, f"Provided 'base_condition' value - {config['base_condition']} - not found in sample table. Following values found (comma separated) - {','.join(samples['condition'].drop_duplicates().tolist())}"
 
-# if samples['fastq2'].isna().all():
-#     sys.stderr.write("No paths found in 'fastq2' column of sample table - assuming samples are single end\n")
-#     single_end = True
-# else:
-#     single_end = False
 
 # Double check 
 bool_flags = ["use_precomputed_bed", "use_custom_polya_bed", "use_precomputed_salmon_index", "run_differential_apa"]
@@ -27,10 +22,23 @@ for flag in bool_flags:
 
 #assert isinstance(config["run_differential_apa"], bool), f"'run_differential' must be True/False boolean, {config['run_differential']} (type {type(config['run_differential'])}) was provided"
 
-# double check validity of sample table if performing differential usage analysis (only two possible conditions)
+# double check validity of sample table & contrasts if performing differential usage analysis (only two possible conditions)
 if config["run_differential_apa"]:
-    assert samples["condition"].nunique() == 2, f"Must only be two distinct values in 'condition' column of sample table, found {samples['condition'].nunique()}"
+    # assert samples["condition"].nunique() == 2, f"Must only be two distinct values in 'condition' column of sample table, found {samples['condition'].nunique()}"
 
+    contrasts = pd.read_csv(config["contrasts"]).set_index("contrast_name", drop=False)
+
+    # Validate contrasts file
+    
+    #1. Provided column name is found in sample table
+    for col_name in contrasts["column_name"]:
+        assert col_name in samples.columns
+
+    #2. Provided base & contrast keys are found in specified column
+    for _, row in contrasts.iterrows():
+        col_vals = samples[row["column_name"]]
+        assert any(row["base_key"] == key for key in col_vals), f"Provided base key - {row['base_key']} - not found in {row['column_name']} column of sample table"
+        assert any(row["contrast_key"] == key for key in col_vals), f"Provided contrast key - {row['contrast_key']} - not found in {row['column_name']} column of sample table"
 
 
 
@@ -42,7 +50,7 @@ include: "rules/qapa_quant.smk"
 include: "rules/differential_apa.smk"
 
 #-------------------------------------------------------------------------------
-localrules: finish
+localrules: finish, make_formulas_txt
 
 rule finish:
     """
@@ -52,7 +60,9 @@ rule finish:
                zip,
                seq_type=samples.seq_type.tolist(),  sample=samples.index.tolist()),
         rules.qapa_quant_combined.output,
-        rules.process_saturn_tbl.output if config["run_differential_apa"] else rules.tximport.output.tx_counts
+        expand(os.path.join(config["out_dir"], "differential_apa", "dexseq_apa.{contrast}.results.tsv"),
+        contrast=contrasts.index.tolist()
+        ) if config["run_differential_apa"] else rules.tximport.output.tx_counts
 
 
 #-------------------------------------------------------------------------------

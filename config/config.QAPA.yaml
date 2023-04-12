@@ -27,8 +27,12 @@ run_differential_apa: True
 # fastq2 - path to second mate read file for sample. If single-end data leave this field empty
 sample_sheet: "config/samplesheet_example.csv"
 
+# CSV contrasts table
+# Note: Only applicable if run_differential_apa set to True
+contrasts: "config/contrasts_example.csv"
+
 # identifier in 'condition' column of sample table which corresponds to the 'base' group in the comparison (e.g. controls)
-base_condition: "CTL"
+# base_condition: "CTL"
 
 # Path to GTF annotation file
 gtf: "test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
@@ -106,10 +110,10 @@ tx2gene: ""
 # 'scaledTPM' - abundance estimates scaled up to library size
 # 'no' - do not use abundance estimates to generate estimated counts
 # If using scaledTPM, lengthScaledTPM, or geneLengthScaledTPM, the counts are no longer correlated across samples with transcript length, and so the length offset matrix should not be used.
-counts_from_abundance: "dtuScaledTPM"
+counts_from_abundance: "lengthScaledTPM"
 
 
-### SatuRn
+#### DIFFERENTIAL USAGE
 
 # Path to transcript | APA_ID assignment table
 # If left as empty string, pipeline will generate it using 3'UTR BED file, PAU results table and quant.sf file from pipeline run (output at <main_output_dir>/annotation/qapa_annotation.tx2apa.tsv)
@@ -117,9 +121,17 @@ counts_from_abundance: "dtuScaledTPM"
 tx2apa: ""
 
 saturn_threads: 2
+dexseq_threads: 4
 
-# Minimum mean count (after calculating size factors with DESeq2's approach) in any condition for an isoform to be retained for differential usage analysis
+# Minimum mean count (after calculating size factors with DESeq2's approach) in either base/contrast condition for an isoform to be retained for differential usage analysis
 min_mean_count: 10
+
+# Minimum mean relative usage of an isoform in either base/contrast condition for it to be retained for differential usage analysis
+# see https://doi.org/10.1186/s13059-015-0862-3
+min_relative_usage: 0.05
+
+dexseq_formula_full: "~ sample + exon + condition:exon"
+dexseq_formula_reduced: "~ sample + exon"
 
 # Settings
 envs: "workflow/envs"

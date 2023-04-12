@@ -96,7 +96,7 @@ rule saturn_apa:
         script = os.path.join(config["scripts_dir"], "run_differential_usage.R"),
         output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa"),
         min_mean_count = config["min_mean_count"],
-        base_condition = config["base_condition"]
+        # base_condition = config["base_condition"]
 
     threads:
         config["saturn_threads"]
@@ -150,6 +150,70 @@ rule process_saturn_tbl:
         -i {input.saturn_tbl} \
         -a {input.tx2apa} \
         -p {input.qapa_quant} \
+        -o {params.output_prefix} \
+        > {log.stdout} \
+        2> {log.stderr}
+        """
+
+
+rule make_formulas_txt:
+    output:
+        os.path.join(config["out_dir"], "differential_apa", "formulas.txt")
+    
+    params:
+        full = config["dexseq_formula_full"],
+        reduced = config["dexseq_formula_reduced"]
+    
+    run:
+        with open(output[0], "w") as outfile:
+            outfile.write(params.full + "\n")
+            outfile.write(params.reduced + "\n")
+
+
+rule dexseq_apa:
+    input:
+        counts = rules.tximport.output.tx_counts,
+        tx2gene = rules.get_tx2id_tbls.output.tx2gene if config["tx2gene"] == "" else config["tx2gene"],
+        formulas = rules.make_formulas_txt.output,
+        sample_tbl = config["sample_sheet"]
+
+    output:
+        os.path.join(config["out_dir"], "differential_apa", "dexseq_apa.{contrast}.results.tsv")
+
+    params:
+        script = os.path.join(config["scripts_dir"], "run_dexseq.R"),
+        output_prefix = os.path.join(config["out_dir"], "differential_apa", "dexseq_apa.{contrast}"),
+        min_mean_count = config["min_mean_count"],
+        min_rel_usage = config["min_relative_usage"],
+        contrast_name = "{contrast}",
+        base_key = lambda wildcards: contrasts.loc[wildcards.contrast, "base_key"],
+        contrast_key = lambda wildcards: contrasts.loc[wildcards.contrast, "contrast_key"],
+        condition_col = lambda wildcards: contrasts.loc[wildcards.contrast, "column_name"],
+
+    log:
+        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "dexseq_apa.{contrast}.stdout.log"),
+        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "dexseq_apa.{contrast}.stderr.log")
+
+    threads:
+        config["dexseq_threads"]
+    
+    container:
+        "docker://sambrycesmith/qapa_snakemake_r_dexseq:334b834"
+
+    shell:
+        """
+        Rscript {params.script} \
+        -i {input.counts} \
+        -g {input.tx2gene} \
+        -s {input.sample_tbl} \
+        --formulas {input.formulas} \
+        --base-key {params.base_key} \
+        --contrast-key {params.contrast_key} \
+        -n {params.contrast_name} \
+        --condition-col {params.condition_col} \
+        -m {params.min_mean_count} \
+        -r {params.min_rel_usage} \
+        -c {threads} \
         -o {params.output_prefix} \
         > {log.stdout} \
         2> {log.stderr}
