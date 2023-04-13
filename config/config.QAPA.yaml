@@ -3,7 +3,7 @@
 #### WORKFLOW CONTROL
 
 # Whether to use a pre-computed polyA site/3'UTR annotation file directly to build Salmon index
-# i.e. uses path provided to utr_bed 
+# i.e. uses path provided to utr_bed
 # e.g. if want to use author provided annotation from QAPA repository
 use_precomputed_bed: False
 
@@ -76,7 +76,7 @@ num_exons_extend_5p: 0
 
 #### SALMON
 
-# Path to directory containing salmon index. 
+# Path to directory containing salmon index.
 # Useful if want to re-use existing index to save computation
 # Used only if use_computed_salmon_index is set to True
 salmon_index_dir: "test_data/salmon_index"
@@ -121,7 +121,7 @@ counts_from_abundance: "lengthScaledTPM"
 tx2apa: ""
 
 saturn_threads: 2
-dexseq_threads: 4
+dexseq_threads: 2
 
 # Minimum mean count (after calculating size factors with DESeq2's approach) in either base/contrast condition for an isoform to be retained for differential usage analysis
 min_mean_count: 10
