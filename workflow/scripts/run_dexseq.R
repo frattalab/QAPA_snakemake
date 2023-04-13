@@ -68,7 +68,7 @@ if (length(commandArgs(trailingOnly = TRUE)) == 0) {
 opt <- parse_args(opt_parser)
 
 
-# 
+#
 counts_path <- opt$counts
 sample_tbl_path <- opt$sample_table
 tx2gene_path <- opt$tx2gene
@@ -99,83 +99,83 @@ min_mean_count_filter <- function(counts, base_samples, treat_samples, min_mean_
   #1. First perform low count filter to remove isoforms with low expressiom
   # Just pick isoforms that have an library size adjusted mean count of at least n reads in either of the conditions
   # Using DESeq2's normalisation method (so count = count / size factor for sample)
-  
+
   message(glue::glue("Filtering isoforms for minimum mean count in any condition of at least - {min_mean_reads}"))
-  
+
   # Named vector of size factors for each sample in matrix
   sfs <- DESeq2::estimateSizeFactorsForMatrix(counts)
-  
-  
+
+
   # Divide each count column (sample) by its corresponding size factor
   norm_counts <- sweep(x = counts,
                        MARGIN = 2, # operate on columns
                        STATS = sfs,
                        FUN = '/')
-  
+
   # Get list of samples (column names) for each condition
   conds <- list(base_samples, treat_samples)
-  
+
   names(conds) <- c("base", "contrast")
-  
-  
-  # Calculate means for each condition      
+
+
+  # Calculate means for each condition
   # Matrix with cols base_cond | treat_cond (mean count)
   means_norm_counts <- sapply(X = conds, FUN = function(x) {rowMeans(norm_counts[, x])})
-  
+
   # Get the max condition mean count for each sample
   # Just a vector of max counts
   maxs <- rowMaxs(means_norm_counts)
-  
+
   # Filter original count matrices for rows with a condition mean > min_mean_reads in either condition
   counts <- counts[maxs > min_mean_reads, ]
-  
+
   message(glue::glue("Number of isoforms after filtering of min mean reads in either condition - {nrow(counts)}"))
-  
+
   return(counts)
 }
 
 #' Filter count matrix for isoforms with at least a minimum mean relative usage in either base or contrast condition
 min_rel_filter <- function(counts, tx2gene, base_samples, treat_samples, min_rel_usage = 0.05) {
-  
+
   if (!("Transcript_ID" %in% colnames(counts))) {
     counts_df <- rownames_to_column(counts, "Transcript_ID")
   } else {
     counts_df <- counts
   }
-  
+
   message(glue::glue("Filtering isoforms for minimum fractional mean relative usage in any condition of at least - {min_rel_usage}"))
-  
+
   # join in gene ID
   counts_df <- dplyr::left_join(counts_df, tx2gene, by = "Transcript_ID")
-  
+
   # convert to long format, add condition
   counts_long <- tidyr::pivot_longer(counts_df,
                               cols = all_of(c(base_samples, treat_samples)),
                               names_to = "sample_name",
                               values_to = "count") %>%
     dplyr::mutate(condition = if_else(sample_name %in% base_samples, "base", "contrast"))
-  
+
   # calc per-sample rel usage for each tx
   rel_use <- counts_long %>%
     dplyr::group_by(Gene, sample_name) %>%
     dplyr::mutate(rel_usage = count / sum(count)) %>%
     dplyr::ungroup()
-  
+
   # calculate condition-wise mean relative usage for each tx
   mean_rel_use <- rel_use %>%
     dplyr::group_by(Transcript_ID, condition) %>%
     dplyr::summarise(mean_rel_usage = mean(rel_usage)) %>%
     dplyr::ungroup()
-  
+
   # calculate max mean relative usage
   max_mean_rel_use <- mean_rel_use %>%
     dplyr::group_by(Transcript_ID) %>%
     dplyr::summarise(max_mean_rel_usage = max(mean_rel_usage))
-  
+
   pass_ids <- dplyr::filter(max_mean_rel_use, max_mean_rel_usage > min_rel_usage) %>% dplyr::pull(Transcript_ID)
-  
-  
-  
+
+
+
   if (!("Transcript_ID" %in% colnames(counts))) {
     out_counts <- counts[which(rownames(counts) %in% pass_ids), ]
   } else {
@@ -183,7 +183,7 @@ min_rel_filter <- function(counts, tx2gene, base_samples, treat_samples, min_rel
   }
 
   message(glue::glue("Number of isoforms after filtering of min mean reads in either condition - {nrow(out_counts)}"))
-  
+
   return(out_counts)
 
 }
@@ -191,15 +191,15 @@ min_rel_filter <- function(counts, tx2gene, base_samples, treat_samples, min_rel
 #' Remove genes that only have a single isoform present in the count matrix
 #' (Removes rows in which a column value (e.g. gene_id) only appears once in a dataframe)
 rm_single_iso_genes <- function(df, id_col = "Gene") {
-  
+
   out_df <- df %>%
     dplyr::group_by(!!sym(id_col)) %>%
     dplyr::filter(dplyr::n_distinct(Transcript_ID) > 1) %>%
     dplyr::ungroup()
-  
+
   message(glue::glue("Number of isoforms after filtering out single isoform genes - {nrow(out_df)}"))
   message(glue::glue("Number of genes with multiple isoforms - {n_distinct(out_df[[id_col]])}"))
-  
+
   return(out_df)
 }
 
@@ -228,7 +228,7 @@ if (length(red_form_cov) > 0) {
   # e.g. pair:exon -> pair
   covs <- str_remove_all(red_form_cov, ":exon")
   glue::glue("Extracted covariate column names (space separated) - {paste(covs, collapse = ' ')}")
-  
+
   # convert covariate cols to factors
   sample_tbl <- mutate(sample_tbl, across(all_of(covs), as.factor))
 }
@@ -277,13 +277,13 @@ system.time({dxd <- estimateDispersions( dxd, BPPARAM = MulticoreParam(cores))})
 
 message("Testing for differential usage...")
 system.time({dxd <- testForDEU(dxd,
-                               reducedModel = as.formula(formulas[2]), 
+                               reducedModel = as.formula(formulas[2]),
                                BPPARAM=MulticoreParam(cores))
 }
 )
 
 message("Estimating exon usage fold changes...")
-system.time({ dxd <- estimateExonFoldChanges( dxd, 
+system.time({ dxd <- estimateExonFoldChanges( dxd,
                                               fitExpToVar= condition_col,
                                               BPPARAM = MulticoreParam(cores),
                                               denominator = base_key)
@@ -314,4 +314,4 @@ dxr_out <- mutate(dxr_out, contrast_name = contrast_name)
 # output
 save.image(paste(output_prefix, ".Rdata", sep = ""))
 write_tsv(counts_out, paste(output_prefix, ".filtered_countData.tsv", sep = ""), col_names = T)
-write_tsv(dxr_out, paste(output_prefix, ".dexseq_results.tsv", sep = ""), col_names = T)
+write_tsv(dxr_out, paste(output_prefix, ".results.tsv", sep = ""), col_names = T)
