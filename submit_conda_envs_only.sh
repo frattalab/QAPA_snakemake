@@ -56,7 +56,7 @@ snakemake \
 --configfile=${CONFIG_PATH} \
 --use-conda \
 --use-singularity \
---create-conda-envs-only \
+--conda-create-envs-only \
 --conda-cleanup-envs \
 --singularity-args=${SMK_BIND_PATH} \
 --jobscript ucl_cluster_qsub.sh \
