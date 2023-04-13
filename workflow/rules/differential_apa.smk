@@ -218,3 +218,35 @@ rule dexseq_apa:
         > {log.stdout} \
         2> {log.stderr}
         """
+
+rule process_dexseq_tbl:
+    input:
+        saturn_tbl = rules.dexseq_apa.output,
+        tx2apa = rules.get_tx2id_tbls.output.tx2apa if config["tx2apa"] == "" else config["tx2apa"],
+        qapa_quant = rules.qapa_quant_combined.output
+
+    output:
+        os.path.join(config["out_dir"], "differential_apa", "dexseq_apa.{contrast}.results.processed.tsv")
+
+
+    params:
+        script = os.path.join(config["scripts_dir"], "process_dexseq_tbl.R"),
+        output_prefix = os.path.join(config["out_dir"], "differential_apa", "dexseq_apa.{contrast}.results")
+
+    log:
+        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "process_dexseq_tbl.{contrast}.stdout.log"),
+        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "process_dexseq_tbl.{contrast}.stderr.log")
+
+    container:
+        "docker://sambrycesmith/qapa_snakemake_r_dexseq:334b834"
+
+    shell:
+        """
+        Rscript {params.script} \
+        -i {input.saturn_tbl} \
+        -a {input.tx2apa} \
+        -p {input.qapa_quant} \
+        -o {params.output_prefix} \
+        > {log.stdout} \
+        2> {log.stderr}
+        """

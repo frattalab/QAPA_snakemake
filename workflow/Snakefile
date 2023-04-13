@@ -60,7 +60,7 @@ rule finish:
                zip,
                seq_type=samples.seq_type.tolist(),  sample=samples.index.tolist()),
         rules.qapa_quant_combined.output,
-        expand(os.path.join(config["out_dir"], "differential_apa", "dexseq_apa.{contrast}.results.tsv"),
+        expand(os.path.join(config["out_dir"], "differential_apa", "dexseq_apa.{contrast}.results.processed.tsv"),
         contrast=contrasts.index.tolist()
         ) if config["run_differential_apa"] else rules.tximport.output.tx_counts
 
