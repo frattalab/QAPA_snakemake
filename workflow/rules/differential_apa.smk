@@ -66,7 +66,7 @@ rule tximport:
         stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "tximport.stderr.log")
 
     container:
-        "docker://sambrycesmith/qapa_snakemake_r:ad6d331"
+        "docker://sambrycesmith/qapa_snakemake_r_dexseq:334b834"
 
     shell:
         """
@@ -77,81 +77,6 @@ rule tximport:
         --countsFromAbundance {params.cfa} \
         -o {params.output_prefix} \
         1> {log.stdout} \
-        2> {log.stderr}
-        """
-
-
-rule saturn_apa:
-    input:
-        counts = rules.tximport.output.tx_counts,
-        le2gene = rules.get_tx2id_tbls.output.tx2gene if config["tx2gene"] == "" else config["tx2gene"],
-        sample_tbl = config["sample_sheet"]
-
-    output:
-        saturn_tbl = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.results.tsv"),
-        rda = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.image.RData"),
-        normed_counts = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.filtered_normed_counts.tsv")
-
-    params:
-        script = os.path.join(config["scripts_dir"], "run_differential_usage.R"),
-        output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa"),
-        min_mean_count = config["min_mean_count"],
-        # base_condition = config["base_condition"]
-
-    threads:
-        config["saturn_threads"]
-
-    log:
-        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "saturn_apa.stdout.log"),
-        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "saturn_apa.stderr.log")
-
-    container:
-        "docker://sambrycesmith/qapa_snakemake_r:ad6d331"
-
-    shell:
-        """
-        Rscript {params.script} \
-        -i {input.counts} \
-        -g {input.le2gene} \
-        -s {input.sample_tbl} \
-        -b {params.base_condition} \
-        -c {threads} \
-        --min-mean-count {params.min_mean_count} \
-        -o {params.output_prefix} \
-        > {log.stdout} \
-        2> {log.stderr}
-        """
-
-
-rule process_saturn_tbl:
-    input:
-        saturn_tbl = rules.saturn_apa.output.saturn_tbl,
-        tx2apa = rules.get_tx2id_tbls.output.tx2apa if config["tx2apa"] == "" else config["tx2apa"],
-        qapa_quant = rules.qapa_quant_combined.output
-
-    output:
-        os.path.join(config["out_dir"], "differential_apa", "saturn_apa.results.processed.tsv")
-
-
-    params:
-        script = os.path.join(config["scripts_dir"], "process_satuRn_tbl.R"),
-        output_prefix = os.path.join(config["out_dir"], "differential_apa", "saturn_apa.results")
-
-    log:
-        stdout = os.path.join(config["out_dir"], "logs", "differential_apa", "process_saturn_tbl.stdout.log"),
-        stderr = os.path.join(config["out_dir"], "logs", "differential_apa", "process_saturn_tbl.stderr.log")
-
-    container:
-        "docker://sambrycesmith/qapa_snakemake_r:ad6d331"
-
-    shell:
-        """
-        Rscript {params.script} \
-        -i {input.saturn_tbl} \
-        -a {input.tx2apa} \
-        -p {input.qapa_quant} \
-        -o {params.output_prefix} \
-        > {log.stdout} \
         2> {log.stderr}
         """
 
@@ -219,9 +144,10 @@ rule dexseq_apa:
         2> {log.stderr}
         """
 
+
 rule process_dexseq_tbl:
     input:
-        saturn_tbl = rules.dexseq_apa.output,
+        dexseq_tbl = rules.dexseq_apa.output,
         tx2apa = rules.get_tx2id_tbls.output.tx2apa if config["tx2apa"] == "" else config["tx2apa"],
         qapa_quant = rules.qapa_quant_combined.output
 
@@ -243,7 +169,7 @@ rule process_dexseq_tbl:
     shell:
         """
         Rscript {params.script} \
-        -i {input.saturn_tbl} \
+        -i {input.dexseq_tbl} \
         -a {input.tx2apa} \
         -p {input.qapa_quant} \
         -o {params.output_prefix} \

@@ -13,7 +13,7 @@ use_custom_polya_bed: False
 # whether to use pre-computed Salmon index for quantification (e.g. from previous run with same annotation)
 use_precomputed_salmon_index: False
 
-# Whether to run differential APA with SatuRn
+# Whether to run differential APA with DEXSeq
 # If set to False, pipeline will terminate after generating count matrices using tximport
 run_differential_apa: True
 
@@ -30,9 +30,6 @@ sample_sheet: "config/samplesheet_example.csv"
 # CSV contrasts table
 # Note: Only applicable if run_differential_apa set to True
 contrasts: "config/contrasts_example.csv"
-
-# identifier in 'condition' column of sample table which corresponds to the 'base' group in the comparison (e.g. controls)
-# base_condition: "CTL"
 
 # Path to GTF annotation file
 gtf: "test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
@@ -120,7 +117,6 @@ counts_from_abundance: "lengthScaledTPM"
 # If have already generated through a previous run of the pipeline with same annotation, provide the path to skip the computation
 tx2apa: ""
 
-saturn_threads: 2
 dexseq_threads: 2
 
 # Minimum mean count (after calculating size factors with DESeq2's approach) in either base/contrast condition for an isoform to be retained for differential usage analysis
