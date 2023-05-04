@@ -3,7 +3,7 @@
 #### WORKFLOW CONTROL
 
 # Whether to use a pre-computed polyA site/3'UTR annotation file directly to build Salmon index
-# i.e. uses path provided to utr_bed 
+# i.e. uses path provided to utr_bed
 # e.g. if want to use author provided annotation from QAPA repository
 use_precomputed_bed: False
 
@@ -13,7 +13,7 @@ use_custom_polya_bed: False
 # whether to use pre-computed Salmon index for quantification (e.g. from previous run with same annotation)
 use_precomputed_salmon_index: False
 
-# Whether to run differential APA with SatuRn
+# Whether to run differential APA with DEXSeq
 # If set to False, pipeline will terminate after generating count matrices using tximport
 run_differential_apa: True
 
@@ -27,8 +27,9 @@ run_differential_apa: True
 # fastq2 - path to second mate read file for sample. If single-end data leave this field empty
 sample_sheet: "config/samplesheet_example.csv"
 
-# identifier in 'condition' column of sample table which corresponds to the 'base' group in the comparison (e.g. controls)
-base_condition: "CTL"
+# CSV contrasts table
+# Note: Only applicable if run_differential_apa set to True
+contrasts: "config/contrasts_example.csv"
 
 # Path to GTF annotation file
 gtf: "test_data/gencode_2genes_Chr_prefix.vM18.annotation.gtf"
@@ -72,7 +73,7 @@ num_exons_extend_5p: 0
 
 #### SALMON
 
-# Path to directory containing salmon index. 
+# Path to directory containing salmon index.
 # Useful if want to re-use existing index to save computation
 # Used only if use_computed_salmon_index is set to True
 salmon_index_dir: "test_data/salmon_index"
@@ -106,20 +107,27 @@ tx2gene: ""
 # 'scaledTPM' - abundance estimates scaled up to library size
 # 'no' - do not use abundance estimates to generate estimated counts
 # If using scaledTPM, lengthScaledTPM, or geneLengthScaledTPM, the counts are no longer correlated across samples with transcript length, and so the length offset matrix should not be used.
-counts_from_abundance: "dtuScaledTPM"
+counts_from_abundance: "lengthScaledTPM"
 
 
-### SatuRn
+#### DIFFERENTIAL USAGE
 
 # Path to transcript | APA_ID assignment table
 # If left as empty string, pipeline will generate it using 3'UTR BED file, PAU results table and quant.sf file from pipeline run (output at <main_output_dir>/annotation/qapa_annotation.tx2apa.tsv)
 # If have already generated through a previous run of the pipeline with same annotation, provide the path to skip the computation
 tx2apa: ""
 
-saturn_threads: 2
+dexseq_threads: 2
 
-# Minimum mean count (after calculating size factors with DESeq2's approach) in any condition for an isoform to be retained for differential usage analysis
+# Minimum mean count (after calculating size factors with DESeq2's approach) in either base/contrast condition for an isoform to be retained for differential usage analysis
 min_mean_count: 10
+
+# Minimum mean relative usage of an isoform in either base/contrast condition for it to be retained for differential usage analysis
+# see https://doi.org/10.1186/s13059-015-0862-3
+min_relative_usage: 0.05
+
+dexseq_formula_full: "~ sample_name + exon + condition:exon"
+dexseq_formula_reduced: "~ sample_name + exon"
 
 # Settings
 envs: "workflow/envs"
