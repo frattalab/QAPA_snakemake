@@ -4,12 +4,13 @@
 [![GitHub actions status](https://github.com/<owner>/<repo>/workflows/Tests/badge.svg?branch=main)](https://github.com/<owner>/<repo>/actions?query=branch%3Amain+workflow%3ATests)
 
 
-A Snakemake workflow for running QAPA for 3'UTR alternative polyA site quantification and additional steps to perform differential polyA site usage analysis with SatuRn.
+A Snakemake workflow for running QAPA for 3'UTR alternative polyA site quantification and additional steps to perform differential polyA site usage analysis with DEXSeq.
 
 The workflow currently has the following functionality:
 - Build QAPA annotation files and Salmon indices from scratch for given input reference annotation
 - Use pre-provided QAPA annotation files and run Salmon quantification & qapa quant
-- Use annotations/indices  (e.g. from a previous run)
+- Use annotations/indices  (e.g. from a previous run) to run Salmon quantification & qapa quant
+- Perform differential polyA site usage with DEXSeq
 
 
 ## Usage
