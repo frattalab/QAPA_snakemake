@@ -69,4 +69,35 @@ rule qapa_build_custom:
         {input.genepred} \
         > {output} \
         2> {log.stderr}
-        """ 
+        """
+
+
+rule extend_qapa_bed:
+    input:
+        bed = rules.qapa_build_custom.output if config["use_custom_polya_bed"] else rules.qapa_build_standard.output,
+        gtf = config["gtf"]
+
+    output: 
+        os.path.join(config["out_dir"], "qapa_build", "utrs.custom_polya.extend_upstream.bed12") if config["use_custom_polya_bed"] else os.path.join(config["out_dir"], "qapa_build", "utrs.standard_polya.extend_upstream.bed12")
+
+    params:
+        script = os.path.join(config["scripts_dir"], "extend_qapa_bed.py"),
+        species = config["species"]
+
+    log:
+        stdout = os.path.join(config["out_dir"], "logs", "qapa_build", "extend_qapa_bed.stdout.log"),
+        stderr = os.path.join(config["out_dir"], "logs", "qapa_build", "extend_qapa_bed.stderr.log")
+
+    container:
+        "docker://quay.io/biocontainers/pyranges:0.0.120--pyh7cba7a3_0"
+
+    shell:
+        '''
+        python {params.script} \
+        {input.bed} \
+        {input.gtf} \
+        {params.species} \
+        {output} \
+        > {log.stdout} \
+        2> {log.stderr}
+        '''

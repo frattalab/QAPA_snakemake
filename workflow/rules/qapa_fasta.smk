@@ -1,5 +1,6 @@
 def input_utr_bed(use_precomputed_bed: bool,
                   use_custom_polya_bed: bool,
+                  extend_upstream: bool,
                   utr_bed: str):
     '''
     Decide target 3'UTR annotation BED file based on workflow parameterisation
@@ -7,6 +8,9 @@ def input_utr_bed(use_precomputed_bed: bool,
 
     if use_precomputed_bed:
         return utr_bed
+    
+    elif extend_upstream:
+        return rules.extend_qapa_bed.output
 
     elif use_custom_polya_bed:
         return rules.qapa_build_custom.output
@@ -18,7 +22,7 @@ def input_utr_bed(use_precomputed_bed: bool,
 
 rule qapa_fasta_decoy:
     input: 
-        utr_bed = input_utr_bed(config["use_precomputed_bed"], config["use_custom_polya_bed"], config["utr_bed"]),
+        utr_bed = input_utr_bed(config["use_precomputed_bed"], config["use_custom_polya_bed"], config["extend_to_upstream_exon"], config["utr_bed"]),
         genome_fa = config["genome_fasta"]
 
     output:
@@ -45,7 +49,7 @@ rule qapa_fasta_decoy:
 
 rule qapa_fasta:
     input: 
-        utr_bed = input_utr_bed(config["use_precomputed_bed"], config["use_custom_polya_bed"], config["utr_bed"]),
+        utr_bed = input_utr_bed(config["use_precomputed_bed"], config["use_custom_polya_bed"], config["extend_to_upstream_exon"], config["utr_bed"]),
         genome_fa = config["genome_fasta"]
 
     output:

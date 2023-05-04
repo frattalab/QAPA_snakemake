@@ -5,12 +5,14 @@ from functools import reduce
 import sys
 
 '''
-Script adds penultimate exons to the output BED file of QAPA build, returning a BED12 output file compatible with
-tried qapa build with -e 1 (extend by 1 exon), but didn't seem to add to region
+Script adds penultimate exons to the output BED file of QAPA build, returning a BED12 output file compatible with bedtools getfasta (and downstream QAPA/Salmon steps)
+This results in all 3'UTR/APA transcripts receiving the same penultimate exons
+tried qapa build with -e 1 (extend by 1 exon), but didn't seem to add to region (as I assumed)
 Purpose of doing this is to rescue additional fragments where the left-most read in pair originates from the penultimate exon (e.g. junction spanning reads)
 This should increase sensitivity for shorter last exons (more reads assigned) and potentially accuracy of expression estimates too
+It will also allow to quantify proximal polyA sites that occur very close to 5'end of terminal exon (e.g. within 100bp - QAPA filters for minimum length of region otherwise Salmon has difficulties mapping reads to the regions)
 
-1. Find introns directly bookending the 
+1. Find introns directly bookending the last exons
 '''
 
 def _df_match_3p_adj(df: pd.DataFrame,
@@ -55,8 +57,29 @@ def _df_to_bed12(df: pd.DataFrame,
                  id_col: str = "Name",
                  length_col: str = "exon_length",
                  item_rgb: str = "0,0,255",
-                 _score: float = 0.0):
-    ''
+                 _score: float = 0.0) -> pd.DataFrame:
+    '''Collapse a group of intervals (e.g. exons) to a single row in BED12 format
+
+    intended to be applied pd.Dataframes internal to a pr.PyRanges object (e.g. pr.apply(lambda df: _df_to_bed12(df)))
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        _description_
+    id_col : str, optional
+        _description_, by default "Name"
+    length_col : str, optional
+        _description_, by default "exon_length"
+    item_rgb : str, optional
+        _description_, by default "0,0,255"
+    _score : float, optional
+        _description_, by default 0.0
+
+    Returns
+    -------
+    pd.DataFrame
+        pd.DataFrame compatible with pr.PyRanges
+    '''
     
     grouped = df.groupby(id_col)
     
@@ -90,10 +113,21 @@ def _df_to_bed12(df: pd.DataFrame,
     return out
     
 
-def gr_to_bed12(gr: pr.PyRanges,):
-    ''
-            
+def gr_to_bed12(gr: pr.PyRanges, id_col="Name") -> pr.PyRanges:
+    '''_summary_
 
+    Parameters
+    ----------
+    gr : pr.PyRanges
+        _description_
+    id_col : str, optional
+        _description_, by default "Name"
+
+    Returns
+    -------
+    pr.PyRanges
+        _description_
+    '''
     
     # Calculate exon lengths
     gr.exon_length = gr.lengths()
@@ -101,7 +135,7 @@ def gr_to_bed12(gr: pr.PyRanges,):
     # make sure sorted by start end
     gr = gr.sort()
     
-    out_gr = gr.apply(lambda df: _df_to_bed12(df))
+    out_gr = gr.apply(lambda df: _df_to_bed12(df, id_col=id_col))
     
     return out_gr
     

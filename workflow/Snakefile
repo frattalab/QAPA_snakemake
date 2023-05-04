@@ -15,7 +15,7 @@ samples.loc[:, "seq_type"] = np.where(samples.fastq2.isna(), "se", "pe")
 
 
 # Double check 
-bool_flags = ["use_precomputed_bed", "use_custom_polya_bed", "use_precomputed_salmon_index", "run_differential_apa"]
+bool_flags = ["use_precomputed_bed", "use_custom_polya_bed", "use_precomputed_salmon_index", "run_differential_apa", "extend_to_upstream_exon"]
 
 for flag in bool_flags:
     assert isinstance(config[flag], bool), f"{flag} must be True/False boolean, {config[flag]} (type {type(config[flag])}) was provided"

@@ -71,6 +71,13 @@ out_dir: "output_test"
 # Default: 0
 num_exons_extend_5p: 0
 
+# Additional custom step to add penultimate exons of transcripts to all 3'UTR isoforms/transcripts
+# This rescues additional reads (e.g. splice junction reads/fragments with a read pair in upstream exon) for alignment
+# and also avoids filtering out polyA sites in very close proximity to 5'end of last exon (by default, QAPA filters out transcripts <= 100nt)
+# Note: in case of alternative penultimate exons, all alternative exons are added to each transcript model
+# True / False (no quotes)
+extend_to_upstream_exon: False
+
 #### SALMON
 
 # Path to directory containing salmon index.

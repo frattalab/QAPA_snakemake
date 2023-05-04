@@ -9,7 +9,7 @@ rule get_tx2id_tbls:
                     zip,
                     seq_type=samples.seq_type.tolist(),
                     sample=samples.index.tolist())[0], # only need one quant.sf file as all use the same reference
-        utr_bed = input_utr_bed(config["use_precomputed_bed"], config["use_custom_polya_bed"], config["utr_bed"])
+        utr_bed = input_utr_bed(config["use_precomputed_bed"], config["use_custom_polya_bed"], config["extend_to_upstream_exon"], config["utr_bed"])
 
     output:
         tx2apa = os.path.join(config["out_dir"], "annotation", "qapa_annotation.tx2apa.tsv"),
