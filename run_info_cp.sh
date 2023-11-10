@@ -21,7 +21,7 @@ echo "echo $git_commit > $outdir/$out_git"
 echo 'Do you wish to proceed with all the above commands (put 1 or 2 to select yes or no)?'
 select yn in "yes" "no"; do
   case $yn in
-    yes ) echo 'you selected to perform these commands'; cp $smk_log $outdir && cp $config $outdir/$out_config;
+    yes ) echo 'you selected to perform these commands'; cp $smk_log $outdir && cp $config $outdir/$out_config && echo $git_commit > $outdir/$out_git;
      break;;
     no ) echo 'You have opted to not perform the above commands. Aborting...'; exit;;
   esac
