@@ -76,6 +76,7 @@ num_exons_extend_5p: 0
 # and also avoids filtering out polyA sites in very close proximity to 5'end of last exon (by default, QAPA filters out transcripts <= 100nt)
 # Note: in case of alternative penultimate exons, all alternative exons are added to each transcript model
 # True / False (no quotes)
+# NOTE: THIS FEATURE IS EXPERIMENTAL. PROCEED WITH CAUTION
 extend_to_upstream_exon: False
 
 #### SALMON
@@ -89,7 +90,8 @@ salmon_index_dir: "test_data/salmon_index"
 salmon_kmer_size: 31
 
 # Whether to add the genome sequence as decoys for assigning reads to transcripts
-# e.g. see 2021 paper - I strongly recommend setting this to true
+# Note: Not explicitly evaluated for APA quantification, but proposed to improve full-length quantification (see https://doi.org/10.1186/s13059-020-02151-8)
+# I recommend setting to True
 add_genome_decoys: False
 
 salmon_index_threads: 2
