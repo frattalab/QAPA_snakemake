@@ -1,29 +1,25 @@
 # Snakemake workflow: `QAPA_snakemake`
 
-
 [![Snakemake](https://img.shields.io/badge/snakemake-≥6.3.0-brightgreen.svg)](https://snakemake.github.io)
 [![GitHub actions status](https://github.com/<owner>/<repo>/workflows/Tests/badge.svg?branch=main)](https://github.com/<owner>/<repo>/actions?query=branch%3Amain+workflow%3ATests)
 
 ## Overview
 
-A Snakemake workflow for running QAPA (**TODO CITATION**) for 3'UTR alternative polyA site quantification, plus optional additional steps to perform differential polyA site usage analysis with DEXSeq (as described in paper) and compute condition-wise summary PAS usages (mean, median, deltas between specified contrasts).
+A Snakemake workflow to run [QAPA](https://doi.org/10.1186/s13059-018-1414-4) for 3'UTR alternative polyA site quantification, plus optional additional steps to perform differential polyA site usage analysis with DEXSeq (as described in QAPA paper) and (**COMING SOON**) compute condition-wise summary PAS usages (mean, median, deltas between specified contrasts).
 
-The workflow currently has the following functionality: (along with custom extensions to QAPA)
+Inclusive of custom, optional extensions to QAPA, the workflow currently has the following functionality:
 
 - Build QAPA annotation files and Salmon indices from scratch for given input reference annotation
-  - Optionally add genome sequence as decoys to transcriptome index (see doi: 10.1186/s13059-020-02151-8 for)
+  - Optionally add genome sequence as decoys to transcriptome index ([previously proposed to improve quantification accuracy](https://doi.org/10.1186/s13059-020-02151-8))
 - Use pre-provided annotations/indices (e.g. from a previous run/QAPA repository) to run Salmon quantification & qapa quant
 - Generate isoform count matrices using tximport
-- Calculate summary values for QAPA computed polyA usage % (PAU)
-  - condition-wise mean and median PAU
-  - differences in mean and median PAU between specified contrasts.
 - Perform differential polyA site usage analysis with DEXSeq
 
-NOTE: This workflow currently uses a forked version of QAPA available at x. The main changes are:
+**NOTE**: This workflow currently uses a [forked version of QAPA](https://github.com/SamBryce-Smith/qapa). The main changes are:
 
 - Option to add genome sequence as a decoys to transcriptome index built by Salmon.
 - Attempt at addressing [issue 49](https://github.com/morrislab/qapa/issues/49)
-- Add penultimate exons to transcript models quantified by Salmon (inspired by LABRAT)
+- (**EXPERIMENTAL**) Add penultimate exons to transcript models quantified by Salmon (inspired by LABRAT)
 
 The above features are completely optional (with exception of bug fix attempt), so a standard QAPA workflow can be configured if desired.
 
@@ -33,17 +29,18 @@ The above features are completely optional (with exception of bug fix attempt), 
 - [Example Run](#example-run)
   - [Dry Run](#dry-run)
   - [Local Run](#local-run)
-  - [Output](#output)
+  - [Output (TODO)](#output-todo)
 - [General Configuration](#configuration)
   - [Sample Table](#sample-table)
   - [Differential Usage](#differential-usage)
-  - [Re-using previously generated references](#reusing-previously-generated-references) TODO: DECIDE HERE OR BELOW
-- [Configuring alternative run modes](#configuring-alternative-run-modes)
+  - [Re-using previously generated references](#reusing-previously-generated-references)
+- [Configuring alternative run modes (TODO)](#configuring-alternative-run-modes-todo)
   - [Use the annotation files provided by QAPA](#use-annotation-files-provided-with-qapa-repository)
   - [Generate 3'UTR annotation using custom BED file of polyA sites](#generate-3utr-annotation-using-custom-bed-file-of-polya-sites)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+- [Troubleshooting (TODO)](#troubleshooting-todo)
+- [Contributing (TODO)](#contributing-todo)
 - [License](#license)
+- [TODOs](#TODOs)
 
 ## Prerequisites and Installation
 
@@ -52,13 +49,11 @@ Before using this pipeline, make sure you have the following software and tools 
 - [Snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html)
 - [Singularity](https://docs.sylabs.io/guides/latest/user-guide/quick_start.html#quick-installation-steps)
 
-
-Clone this repository to your local machine: 
-**TODO: UPDATE**
+Then clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/yourusername/your-repo.git
-cd your-repo
+git clone https://github.com/frattalab/QAPA_snakemake
+cd QAPA_snakemake
 ```
 
 [Return to table of contents](#table-of-contents)
@@ -96,12 +91,13 @@ snakemake --use-singularity -p  --configfile path/to/my_config.yaml --cores n
 ```
 
 - replace `n` with the number of cores for parallel processing.
+- if providing input files not located relative to the execution directory, you may need to mount the corresponding directory to the Singularity container using `--singularity-args "--bind /path/to/dir"`
 
-This takes about x mins (on my bog standard laptop running Windows Subsystem for Linux)
+This should take at most a few mins (on my bog standard laptop running Windows Subsystem for Linux)
 
 [Return to table of contents](#table-of-contents)
 
-### Output
+### Output (TODO)
 
 Pipeline output is stored in subdirectories under the `**TODO**` directory, which is controlled by the `out_dir` flag in the config YAML file:
 
@@ -128,7 +124,7 @@ Below are general instructions for configuring the pipeline to run with your own
 
 ### Sample Table
 
-Defines input samples and their associated metadata. An example is provided at `config/samplesheet_example.csv` (**TODO: INSERT LINK**). the minimal, mandatory columns are:
+Defines input samples and their associated metadata. An example is provided at [`config/samplesheet_example.csv`](config/samplesheet_example.csv). the minimal, mandatory columns are:
 
 - `sample_name` - unique identifier for a given sample
 - `condition` - key to group samples belonging to the same experimental condition.
@@ -177,26 +173,37 @@ dexseq_formula_reduced: "~ sample_name + exon + batch:exon"
 
 ## Reusing previously generated references
 
-To prevent unnecessary computation on successive runs using the same reference annotation, it is possible to provide pre-computed Salmon indices and reference files for a given run and skip straight to Salmon quantification. This can be achieved by 
+To prevent unnecessary computation on successive runs using the same reference annotation, it is possible to provide pre-computed Salmon indices and reference files and skip straight to Salmon quantification:
 
+- set `use_precomputed_salmon_index` to True
+- set `salmon_index_dir` to the directory containing the Salmon index
+- (Optionally) set `tx2apa` to the table mapping transcript IDs in the qapa build 3'UTR BED with APA_IDs (output at `<main_output_dir>/annotation/qapa_annotation.tx2apa.tsv`)
 
-## Configuring alternative run modes
+## Configuring alternative run modes (TODO)
 
 ### Use annotation files provided with QAPA repository
 
 ### Generate 3'UTR annotation using custom BED file of polyA sites
 
-
-
-### xx
-
-## Troubleshooting
+## Troubleshooting (TODO)
 
 If you encounter any issues or have questions about the pipeline, please check the Issues section of this repository. If you don't find a solution, feel free to open a new issue.
 
-## Contributing
+## Contributing (TODO)
 
 If you'd like to contribute to this pipeline, please follow the guidelines in CONTRIBUTING.md.
 
 ## License
 This pipeline is licensed under the MIT License.
+
+## TODOs
+
+- Example/test data
+- Documentation
+  - Example output & directory structure
+  - Document output files (specific to pipeline)
+  - Alternative run modes
+    - Using QAPA provided annotation files
+    - Generate 3'UTR annotation with custom BED file
+- Add scripts & steps to compute summarised PAU & LABRAT psi values
+- Pull request to main QAPA repository where applicable (e.g. genome decoys, bug fix)
