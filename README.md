@@ -71,6 +71,8 @@ The following steps will work through an example run of the complete workflow of
 
 ### Dry Run
 
+#### TODO: ADD TEST DATA SO THIS CAN BE RUN
+
 First, we perform a 'dry run' to check that the configuration YAML file is specified correctly and to report the execution plan. Run the following command using the pre-provided config file for the test data (`config/config.QAPA.yaml`):
 
 ```bash
