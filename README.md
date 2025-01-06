@@ -38,9 +38,11 @@ The above features are completely optional (with exception of bug fix attempt), 
   - [Use the annotation files provided by QAPA](#use-annotation-files-provided-with-qapa-repository)
   - [Generate 3'UTR annotation using custom BED file of polyA sites](#generate-3utr-annotation-using-custom-bed-file-of-polya-sites)
 - [Troubleshooting (TODO)](#troubleshooting-todo)
+- [Development](#development)
 - [Contributing (TODO)](#contributing-todo)
 - [License](#license)
 - [TODOs](#TODOs)
+
 
 ## Prerequisites and Installation
 
@@ -195,7 +197,25 @@ If you encounter any issues or have questions about the pipeline, please check t
 
 If you'd like to contribute to this pipeline, please follow the guidelines in CONTRIBUTING.md.
 
+## Development (WIP)
+
+Development environment and testing workflows are a work-in-progress. Aim is to provide end-to-end test of pipeline run-modes outputs using Snakemake, and pytest/testthat workflows for custom Python and R scripts.
+
+### Testing R scripts
+
+```bash
+# Ensure in project root
+$basename $(pwd)
+QAPA_snakemake
+
+# Run tests for QAPA results table manipulation functions
+$ Rscript workflow/tests/scripts/test_calculate_utils.R
+```
+
+[Return to table of contents](#table-of-contents)
+
 ## License
+
 This pipeline is licensed under the MIT License.
 
 ## TODOs
