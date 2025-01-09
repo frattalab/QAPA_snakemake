@@ -46,3 +46,65 @@ pivot_qapa_results <- function(qapa_df, metric = c("TPM", "PAU", "both"),
  
   inner_join(pau_long, tpm_long, by = c("APA_ID", sample_name_col))
 }
+
+
+#' Calculate summary TPM or PAU values (mean, median) from a long-format QAPA results table
+#' 
+#' @param df A data frame containing QAPA quant results in long format (e.g. output of pivot_qapa_results)
+#' @param group_cols Character vector of columns to group by. Default: c("condition", "APA_ID")
+#' @param metric_cols Character vector of metric columns to summarize (can be one argument / both). Default: c("TPM", "PAU")
+#' @param names_sep String to separate names in pivoted columns. Default: "."
+#'
+#' @return A data frame in wide format with mean/median values for each metric and condition (one row per APA_ID)
+#'      
+#' 
+#' @examples
+#' @export
+summarise_qapa_results <- function(df, 
+                                     group_cols = c("condition", "APA_ID"),
+                                     metric_cols = c("TPM", "PAU"),
+                                     names_sep = ".") {
+  
+  # Validate inputs
+  stopifnot(
+    is.data.frame(df),
+    all(group_cols %in% colnames(df)),
+    all(metric_cols %in% colnames(df))
+  )
+  
+  # Get non-APA_ID grouping columns
+  pivot_name_cols <- setdiff(group_cols, "APA_ID")
+  
+  df %>%
+    # first calculate summary statistics for each group and metric
+    group_by(across(all_of(group_cols))) %>%
+    summarise(
+      across(
+        all_of(metric_cols),
+        list(
+          mean = mean,
+          median = median
+        ),
+        .names = "{.col}{.fn}"
+      ),
+      .groups = "drop"
+    ) %>%
+    # put summary values into columns (one row per APA_ID)
+    pivot_wider(
+      id_cols = APA_ID,
+      names_from = all_of(pivot_name_cols),
+      values_from = matches("mean|median"),
+      names_sep = names_sep
+    )
+}
+
+test_df <- tibble::tibble(
+  APA_ID = rep(c("gene1_1", "gene1_2", "gene2_1", "gene2_2"), each = 2),
+  condition = "a",
+  replicate = rep(1:2, 4),
+  TPM = c(10, 15, 20, 25, 30, 35, 5, 8),
+  PAU = c(80, 75, 20, 25, 60, 65, 40, 35)
+)
+
+# default (calculate TPM and PAU summaries for each condition and APA_ID)
+summarise_qapa_results(test_df)
